@@ -1,10 +1,15 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "produtos")
 public class ProdutoEntity {
