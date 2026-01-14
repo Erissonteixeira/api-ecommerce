@@ -3,6 +3,7 @@ package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.service;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.ItemCarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.CarrinhoRepository;
+import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,8 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -66,5 +66,24 @@ class CarrinhoServiceImplTest {
         assertEquals("Produto Teste", item.getNomeProduto());
         assertEquals(new BigDecimal("50.00"), item.getPrecoUnitario());
         assertEquals(2, item.getQuantidade());
+    }
+
+    @Test
+    void adicionarItem_quantidadeZeroDeveLancarExcecao() {
+        when(carrinhoRepository.findById(1L))
+                .thenReturn(Optional.of(carrinho));
+
+        NegocioException exception = assertThrows(
+                NegocioException.class,
+                () -> service.adicionarItem(
+                        1L,
+                        10L,
+                        "Produto Teste",
+                        new BigDecimal("50.00"),
+                        0
+                )
+        );
+
+        assertEquals("Quantidade deve ser maior que zero", exception.getMessage());
     }
 }
