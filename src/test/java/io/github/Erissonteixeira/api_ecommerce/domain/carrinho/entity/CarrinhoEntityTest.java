@@ -1,7 +1,5 @@
-package io.github.Erissonteixeira.api_ecommerce.domain.carrinho;
+package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity;
 
-import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
-import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.ItemCarrinhoEntity;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
