@@ -117,4 +117,21 @@ class CarrinhoServiceImplTest {
 
         assertEquals("Carrinho não encontrado", exception.getMessage());
     }
+
+    @Test
+    void calcularTotal_deveRetornarSomaItens() {
+        carrinho.adicionarItem(
+                new ItemCarrinhoEntity(10L, "Produto A", new BigDecimal("20.00"), 2)
+        );
+        carrinho.adicionarItem(
+                new ItemCarrinhoEntity(11L, "Produto B", new BigDecimal("30.00"), 1)
+        );
+
+        when(carrinhoRepository.findById(1L))
+                .thenReturn(Optional.of(carrinho));
+
+        BigDecimal total = service.calcularTotal(1L);
+
+        assertEquals(new BigDecimal("70.00"), total);
+    }
 }
