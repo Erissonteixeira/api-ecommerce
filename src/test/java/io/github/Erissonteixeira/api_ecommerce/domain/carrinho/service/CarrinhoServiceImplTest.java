@@ -86,4 +86,22 @@ class CarrinhoServiceImplTest {
 
         assertEquals("Quantidade deve ser maior que zero", exception.getMessage());
     }
+
+    @Test
+    void removerItem_deveRemoverItem() {
+        ItemCarrinhoEntity item =
+                new ItemCarrinhoEntity(10L, "Produto Teste", new BigDecimal("50.00"), 1);
+
+        carrinho.adicionarItem(item);
+
+        when(carrinhoRepository.findById(1L))
+                .thenReturn(Optional.of(carrinho));
+        when(carrinhoRepository.save(any(CarrinhoEntity.class)))
+                .thenReturn(carrinho);
+
+        CarrinhoEntity resultado = service.removerItem(1L, 10L);
+
+        assertTrue(resultado.getItens().isEmpty());
+    }
+
 }
