@@ -4,6 +4,7 @@ import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEn
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.ItemCarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.CarrinhoRepository;
 import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
+import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,4 +105,16 @@ class CarrinhoServiceImplTest {
         assertTrue(resultado.getItens().isEmpty());
     }
 
+    @Test
+    void removerItem_carrinhoNaoExistenteDeveLancarExcecao() {
+        when(carrinhoRepository.findById(1L))
+                .thenReturn(Optional.empty());
+
+        RecursoNaoEncontradoException exception = assertThrows(
+                RecursoNaoEncontradoException.class,
+                () -> service.removerItem(1L, 10L)
+        );
+
+        assertEquals("Carrinho não encontrado", exception.getMessage());
+    }
 }
