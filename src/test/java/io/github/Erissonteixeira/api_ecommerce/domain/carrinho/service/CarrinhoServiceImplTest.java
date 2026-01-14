@@ -1,6 +1,7 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.service;
 
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
+import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.ItemCarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.CarrinhoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
@@ -37,5 +42,29 @@ class CarrinhoServiceImplTest {
 
         assertNotNull(resultado);
         verify(carrinhoRepository, times(1)).save(any(CarrinhoEntity.class));
+    }
+
+    @Test
+    void adicionarItem_deveAdicionarItemExistente() {
+        when(carrinhoRepository.findById(1L))
+                .thenReturn(Optional.of(carrinho));
+        when(carrinhoRepository.save(any(CarrinhoEntity.class)))
+                .thenReturn(carrinho);
+
+        CarrinhoEntity resultado = service.adicionarItem(
+                1L,
+                10L,
+                "Produto Teste",
+                new BigDecimal("50.00"),
+                2
+        );
+
+        assertEquals(1, resultado.getItens().size());
+
+        ItemCarrinhoEntity item = resultado.getItens().get(0);
+        assertEquals(10L, item.getProdutoId());
+        assertEquals("Produto Teste", item.getNomeProduto());
+        assertEquals(new BigDecimal("50.00"), item.getPrecoUnitario());
+        assertEquals(2, item.getQuantidade());
     }
 }
