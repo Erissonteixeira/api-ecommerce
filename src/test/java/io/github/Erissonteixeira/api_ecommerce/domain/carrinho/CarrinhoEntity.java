@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CarrinhoEntityTest {
 
@@ -69,5 +70,15 @@ class CarrinhoEntityTest {
         carrinho.removerItem(1L);
 
         assertEquals(0, carrinho.getItens().size());
+    }
+
+    @Test
+    void deveLancarErroAoRemoverProdutoInexistente() {
+        CarrinhoEntity carrinho = new CarrinhoEntity();
+
+        assertThrows(
+                RuntimeException.class,
+                () -> carrinho.removerItem(99L)
+        );
     }
 }
