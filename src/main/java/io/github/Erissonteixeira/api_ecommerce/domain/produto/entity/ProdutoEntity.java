@@ -1,4 +1,4 @@
-package io.github.Erissonteixeira.api_ecommerce.domain.entity;
+package io.github.Erissonteixeira.api_ecommerce.domain.produto.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
