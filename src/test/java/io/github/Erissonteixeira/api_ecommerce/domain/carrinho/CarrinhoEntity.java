@@ -41,4 +41,20 @@ class CarrinhoEntityTest {
         assertEquals(3, carrinho.getItens().get(0).getQuantidade());
     }
 
+    @Test
+    void deveCalcularTotalDoCarrinho() {
+        CarrinhoEntity carrinho = new CarrinhoEntity();
+
+        carrinho.adicionarItem(new ItemCarrinhoEntity(
+                1L, "Produto A", new BigDecimal("10.00"), 2
+        ));
+
+        carrinho.adicionarItem(new ItemCarrinhoEntity(
+                2L, "Produto B", new BigDecimal("20.00"), 1
+        ));
+
+        BigDecimal total = carrinho.calcularTotal();
+
+        assertEquals(new BigDecimal("40.00"), total);
+    }
 }
