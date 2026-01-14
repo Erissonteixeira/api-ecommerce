@@ -57,4 +57,17 @@ class CarrinhoEntityTest {
 
         assertEquals(new BigDecimal("40.00"), total);
     }
+
+    @Test
+    void deveRemoverItemQuandoQuantidadeForUm() {
+        CarrinhoEntity carrinho = new CarrinhoEntity();
+
+        carrinho.adicionarItem(new ItemCarrinhoEntity(
+                1L, "Produto A", new BigDecimal("10.00"), 1
+        ));
+
+        carrinho.removerItem(1L);
+
+        assertEquals(0, carrinho.getItens().size());
+    }
 }
