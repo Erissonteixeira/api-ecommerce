@@ -25,4 +25,20 @@ class CarrinhoEntityTest {
 
         assertEquals(1, carrinho.getItens().size());
     }
+
+    @Test
+    void deveIncrementarQuantidadeSeProdutoJaExistir() {
+        CarrinhoEntity carrinho = new CarrinhoEntity();
+
+        carrinho.adicionarItem(new ItemCarrinhoEntity(
+                1L, "Produto A", new BigDecimal("50.00"), 1
+        ));
+
+        carrinho.adicionarItem(new ItemCarrinhoEntity(
+                1L, "Produto A", new BigDecimal("50.00"), 2
+        ));
+
+        assertEquals(3, carrinho.getItens().get(0).getQuantidade());
+    }
+
 }
