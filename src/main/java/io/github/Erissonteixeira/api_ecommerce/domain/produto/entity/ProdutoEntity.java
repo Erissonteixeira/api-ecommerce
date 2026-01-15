@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,9 +28,25 @@ public class ProdutoEntity {
     @Column(nullable = false)
     private Boolean ativo;
 
-    @Column(name = "criado_em", nullable = false)
+    @Column(name = "criado_em", nullable = false, updatable = false)
     private LocalDateTime criadoEm;
 
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.criadoEm == null) {
+            this.criadoEm = LocalDateTime.now();
+        }
+
+        if (this.ativo == null) {
+            this.ativo = Boolean.TRUE;
+        }
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.atualizadoEm = LocalDateTime.now();
+    }
 }
