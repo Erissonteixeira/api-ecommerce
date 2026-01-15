@@ -196,4 +196,34 @@ class ProdutoServiceImplTest {
         verify(produtoRepository).save(existente);
         verify(produtoMapper).toResponse(existente);
     }
+
+    @Test
+    void atualizar_quandoNaoExiste_deveLancarRecursoNaoEncontrado() {
+        when(produtoRepository.findById(123L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> produtoService.atualizar(123L, dtoValido()))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessage("Produto não encontrado");
+
+        verify(produtoRepository).findById(123L);
+        verify(produtoRepository, never()).save(any());
+    }
+
+    @Test
+    void desativar_quandoExiste_deveSetarAtivoFalse_setarAtualizadoEm_eSalvar() {
+        var existente = entityBase(7L, true);
+        existente.setAtualizadoEm(null);
+
+        when(produtoRepository.findById(7L)).thenReturn(Optional.of(existente));
+        when(produtoRepository.save(any(ProdutoEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        produtoService.desativar(7L);
+
+        assertThat(existente.getAtivo()).isFalse();
+        assertThat(existente.getAtualizadoEm()).isNotNull();
+
+        verify(produtoRepository).findById(7L);
+        verify(produtoRepository).save(existente);
+        verifyNoInteractions(produtoMapper);
+    }
 }
