@@ -134,4 +134,23 @@ class CarrinhoServiceImplTest {
 
         assertEquals(new BigDecimal("70.00"), total);
     }
+
+    @Test
+    void adicionarItem_deveRemoverEspacosDoNomeProduto() {
+        when(carrinhoRepository.findById(1L))
+                .thenReturn(Optional.of(carrinho));
+        when(carrinhoRepository.save(any(CarrinhoEntity.class)))
+                .thenReturn(carrinho);
+
+        CarrinhoEntity resultado = service.adicionarItem(
+                1L,
+                10L,
+                "  Produto Teste  ",
+                new BigDecimal("50.00"),
+                2
+        );
+
+        assertEquals("Produto Teste", resultado.getItens().get(0).getNomeProduto());
+    }
+
 }
