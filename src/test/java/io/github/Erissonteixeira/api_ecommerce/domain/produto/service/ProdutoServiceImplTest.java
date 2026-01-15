@@ -163,4 +163,37 @@ class ProdutoServiceImplTest {
         verify(produtoRepository).findByAtivoTrue();
         verify(produtoMapper).toResponse(e1);
     }
+
+    @Test
+    void atualizar_quandoExiste_deveAtualizarCampos_setarAtualizadoEm_eSalvar() {
+        var dto = dtoValido();
+        dto.setNome("Nome Novo");
+        dto.setPreco(new BigDecimal("99.99"));
+        dto.setAtivo(false);
+
+        var existente = entityBase(5L, true);
+        existente.setAtualizadoEm(null);
+
+        var resp = new ProdutoResponseDto();
+        resp.setId(5L);
+        resp.setNome("Nome Novo");
+        resp.setPreco(new BigDecimal("99.99"));
+        resp.setAtivo(false);
+
+        when(produtoRepository.findById(5L)).thenReturn(Optional.of(existente));
+        when(produtoRepository.save(any(ProdutoEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(produtoMapper.toResponse(any(ProdutoEntity.class))).thenReturn(resp);
+
+        var resultado = produtoService.atualizar(5L, dto);
+
+        assertThat(resultado.getId()).isEqualTo(5L);
+        assertThat(existente.getNome()).isEqualTo("Nome Novo");
+        assertThat(existente.getPreco()).isEqualByComparingTo("99.99");
+        assertThat(existente.getAtivo()).isFalse();
+        assertThat(existente.getAtualizadoEm()).isNotNull();
+
+        verify(produtoRepository).findById(5L);
+        verify(produtoRepository).save(existente);
+        verify(produtoMapper).toResponse(existente);
+    }
 }
