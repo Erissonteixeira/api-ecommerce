@@ -75,12 +75,13 @@ public class CarrinhoServiceImpl implements CarrinhoService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CarrinhoEntity buscarPorId(Long carrinhoId) {
         if (carrinhoId == null) {
             throw new NegocioException("CarrinhoId não pode ser nulo");
         }
 
-        return carrinhoRepository.findById(carrinhoId)
+        return carrinhoRepository.buscarComItensPorId(carrinhoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho não encontrado"));
     }
 
