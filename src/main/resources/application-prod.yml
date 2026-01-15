@@ -2,6 +2,7 @@ spring:
   config:
     activate:
       on-profile: prod
+
   datasource:
     url: jdbc:mysql://mysql:3306/ecommerce?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -9,5 +10,9 @@ spring:
     password: ecommerce
     hikari:
       initialization-fail-timeout: 60000
+
   jpa:
     show-sql: false
+
+  flyway:
+    enabled: true
