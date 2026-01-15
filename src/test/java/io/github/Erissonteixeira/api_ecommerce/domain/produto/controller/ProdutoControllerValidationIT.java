@@ -188,4 +188,12 @@ class ProdutoControllerValidationIT {
                         .content(JSON_FALTANDO_CAMPO_PRECO))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void deveRetornar400_quandoAtualizarSemCampoNome() throws Exception {
+        mockMvc.perform(put("/produtos/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_FALTANDO_CAMPO_NOME))
+                .andExpect(status().isBadRequest());
+    }
 }
