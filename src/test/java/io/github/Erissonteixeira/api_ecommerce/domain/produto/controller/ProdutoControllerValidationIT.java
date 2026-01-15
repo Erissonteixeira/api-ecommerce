@@ -173,4 +173,11 @@ class ProdutoControllerValidationIT {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    void deveRetornar400_quandoAtualizarSemCampoAtivo() throws Exception {
+        mockMvc.perform(put("/produtos/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_FALTANDO_CAMPO_ATIVO))
+                .andExpect(status().isBadRequest());
+    }
 }
