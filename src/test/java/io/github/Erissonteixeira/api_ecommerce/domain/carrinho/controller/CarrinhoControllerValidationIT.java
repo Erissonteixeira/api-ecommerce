@@ -25,4 +25,13 @@ class CarrinhoControllerValidationIT {
         mockMvc.perform(get("/carrinhos/{carrinhoId}", 999999L))
                 .andExpect(status().isNotFound());
     }
-}
+
+    @Test
+    void deveRetornar404_quandoAdicionarItemEmCarrinhoInexistente() throws Exception {
+        CarrinhoAdicionarItemRequestDto dto = dtoValido();
+
+        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", 999999L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
