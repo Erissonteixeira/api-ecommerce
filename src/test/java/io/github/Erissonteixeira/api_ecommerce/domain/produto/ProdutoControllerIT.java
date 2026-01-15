@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -60,5 +61,17 @@ class ProdutoControllerIT {
                 .andExpect(jsonPath("$.ativo").value(true))
                 .andExpect(jsonPath("$.criadoEm", notNullValue()))
                 .andExpect(jsonPath("$.atualizadoEm").doesNotExist());
+    }
+
+    @Test
+    void deveBuscarPorId_quandoExiste() throws Exception {
+        ProdutoEntity salvo = produtoRepository.save(novoProduto("Mouse Gamer", "99.90", true));
+
+        mockMvc.perform(get("/produtos/{id}", salvo.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(salvo.getId()))
+                .andExpect(jsonPath("$.nome").value("Mouse Gamer"))
+                .andExpect(jsonPath("$.preco").value(99.90))
+                .andExpect(jsonPath("$.ativo").value(true));
     }
 }
