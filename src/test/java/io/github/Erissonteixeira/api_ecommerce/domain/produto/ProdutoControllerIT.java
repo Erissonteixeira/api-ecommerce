@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -73,5 +74,19 @@ class ProdutoControllerIT {
                 .andExpect(jsonPath("$.nome").value("Mouse Gamer"))
                 .andExpect(jsonPath("$.preco").value(99.90))
                 .andExpect(jsonPath("$.ativo").value(true));
+    }
+
+    @Test
+    void deveListarTodos_quandoAtivosFalseOuNaoInformado() throws Exception {
+        produtoRepository.save(novoProduto("A", "10.00", true));
+        produtoRepository.save(novoProduto("B", "20.00", false));
+
+        mockMvc.perform(get("/produtos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
+
+        mockMvc.perform(get("/produtos").param("ativos", "false"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)));
     }
 }
