@@ -5,13 +5,18 @@ import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRespons
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoRepository;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.mapper.ProdutoMapper;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProdutoServiceImplTest {
@@ -53,5 +58,38 @@ class ProdutoServiceImplTest {
         r.setCriadoEm(LocalDateTime.now().minusDays(1));
         r.setAtualizadoEm(null);
         return r;
+    }
+
+    @Test
+    void criar_deveSetarCriadoEm_eAtualizadoEmNull_eSalvar() {
+        var dto = dtoValido();
+        var entitySemDatas = new ProdutoEntity();
+        entitySemDatas.setNome(dto.getNome());
+        entitySemDatas.setPreco(dto.getPreco());
+        entitySemDatas.setAtivo(dto.getAtivo());
+
+        var salvo = entityBase(1L, true);
+        salvo.setAtualizadoEm(null); // como teu service deixa null no create
+
+        var resp = response(1L, true);
+
+        when(produtoMapper.toEntity(dto)).thenReturn(entitySemDatas);
+        when(produtoRepository.save(any(ProdutoEntity.class))).thenReturn(salvo);
+        when(produtoMapper.toResponse(salvo)).thenReturn(resp);
+
+        var resultado = produtoService.criar(dto);
+
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getId()).isEqualTo(1L);
+
+        ArgumentCaptor<ProdutoEntity> captor = ArgumentCaptor.forClass(ProdutoEntity.class);
+        verify(produtoRepository).save(captor.capture());
+
+        ProdutoEntity enviadoParaSalvar = captor.getValue();
+        assertThat(enviadoParaSalvar.getCriadoEm()).isNotNull();
+        assertThat(enviadoParaSalvar.getAtualizadoEm()).isNull();
+
+        verify(produtoMapper).toEntity(dto);
+        verify(produtoMapper).toResponse(salvo);
     }
 }
