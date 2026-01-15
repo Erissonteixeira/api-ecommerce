@@ -35,3 +35,5 @@ class CarrinhoControllerValidationIT {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
