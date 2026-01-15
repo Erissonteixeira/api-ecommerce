@@ -226,4 +226,16 @@ class ProdutoServiceImplTest {
         verify(produtoRepository).save(existente);
         verifyNoInteractions(produtoMapper);
     }
+
+    @Test
+    void desativar_quandoNaoExiste_deveLancarRecursoNaoEncontrado() {
+        when(produtoRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> produtoService.desativar(404L))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessage("Produto não encontrado");
+
+        verify(produtoRepository).findById(404L);
+        verify(produtoRepository, never()).save(any());
+    }
 }
