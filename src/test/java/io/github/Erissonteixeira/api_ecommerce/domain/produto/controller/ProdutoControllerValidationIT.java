@@ -164,4 +164,13 @@ class ProdutoControllerValidationIT {
                         .content(JSON_NOME_EM_BRANCO))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void deveRetornar400_quandoAtualizarComPrecoNegativo() throws Exception {
+        mockMvc.perform(put("/produtos/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_PRECO_NEGATIVO))
+                .andExpect(status().isBadRequest());
+    }
+
 }
