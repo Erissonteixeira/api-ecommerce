@@ -146,4 +146,21 @@ class ProdutoServiceImplTest {
         verify(produtoMapper).toResponse(e1);
         verify(produtoMapper).toResponse(e2);
     }
+
+    @Test
+    void listarAtivos_deveChamarFindByAtivoTrue_eMapear() {
+        var e1 = entityBase(1L, true);
+        var r1 = response(1L, true);
+
+        when(produtoRepository.findByAtivoTrue()).thenReturn(List.of(e1));
+        when(produtoMapper.toResponse(e1)).thenReturn(r1);
+
+        var lista = produtoService.listarAtivos();
+
+        assertThat(lista).hasSize(1);
+        assertThat(lista.get(0).getAtivo()).isTrue();
+
+        verify(produtoRepository).findByAtivoTrue();
+        verify(produtoMapper).toResponse(e1);
+    }
 }
