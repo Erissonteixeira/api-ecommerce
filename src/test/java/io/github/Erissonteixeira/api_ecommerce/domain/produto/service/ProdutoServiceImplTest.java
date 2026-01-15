@@ -5,6 +5,7 @@ import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRespons
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoRepository;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.mapper.ProdutoMapper;
+import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,5 +109,17 @@ class ProdutoServiceImplTest {
         assertThat(resultado.getId()).isEqualTo(10L);
         verify(produtoRepository).findById(10L);
         verify(produtoMapper).toResponse(entity);
+    }
+
+    @Test
+    void buscarPorId_quandoNaoExiste_deveLancarRecursoNaoEncontrado() {
+        when(produtoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> produtoService.buscarPorId(99L))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessage("Produto não encontrado");
+
+        verify(produtoRepository).findById(99L);
+        verifyNoInteractions(produtoMapper);
     }
 }
