@@ -55,7 +55,7 @@ class CarrinhoEntityTest {
 
         BigDecimal total = carrinho.calcularTotal();
 
-        assertEquals(new BigDecimal("40.00"), total);
+        assertEquals(0, total.compareTo(new BigDecimal("40.00")));
     }
 
     @Test
