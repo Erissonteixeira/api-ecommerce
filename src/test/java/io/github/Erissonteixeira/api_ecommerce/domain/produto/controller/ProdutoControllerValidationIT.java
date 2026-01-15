@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -153,6 +154,14 @@ class ProdutoControllerValidationIT {
         mockMvc.perform(post("/produtos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(JSON_FALTANDO_CAMPO_PRECO))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void deveRetornar400_quandoAtualizarComNomeEmBranco() throws Exception {
+        mockMvc.perform(put("/produtos/{id}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_NOME_EM_BRANCO))
                 .andExpect(status().isBadRequest());
     }
 }
