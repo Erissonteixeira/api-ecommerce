@@ -1,21 +1,37 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity;
 
-import java.math.BigDecimal;
-import java.util.Objects;
+import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "itens_carrinho")
 public class ItemCarrinhoEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "carrinho_id", nullable = false)
+    private CarrinhoEntity carrinho;
+
+    @Column(name = "produto_id", nullable = false)
     private Long produtoId;
+
+    @Column(name = "nome_produto", nullable = false, length = 100)
     private String nomeProduto;
+
+    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
     private BigDecimal precoUnitario;
+
+    @Column(nullable = false)
     private Integer quantidade;
 
-    public ItemCarrinhoEntity(
-            Long produtoId,
-            String nomeProduto,
-            BigDecimal precoUnitario,
-            Integer quantidade
-    ) {
+    public ItemCarrinhoEntity() {
+    }
+
+    public ItemCarrinhoEntity(Long produtoId, String nomeProduto, BigDecimal precoUnitario, Integer quantidade) {
         this.produtoId = produtoId;
         this.nomeProduto = nomeProduto;
         this.precoUnitario = precoUnitario;
@@ -34,6 +50,18 @@ public class ItemCarrinhoEntity {
         this.quantidade -= quantidade;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public CarrinhoEntity getCarrinho() {
+        return carrinho;
+    }
+
+    public void setCarrinho(CarrinhoEntity carrinho) {
+        this.carrinho = carrinho;
+    }
+
     public Long getProdutoId() {
         return produtoId;
     }
@@ -48,17 +76,5 @@ public class ItemCarrinhoEntity {
 
     public Integer getQuantidade() {
         return quantidade;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ItemCarrinhoEntity that)) return false;
-        return Objects.equals(produtoId, that.produtoId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(produtoId);
     }
 }
