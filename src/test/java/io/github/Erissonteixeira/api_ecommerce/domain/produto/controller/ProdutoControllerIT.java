@@ -120,4 +120,16 @@ class ProdutoControllerIT {
                 .andExpect(jsonPath("$.ativo").value(true))
                 .andExpect(jsonPath("$.atualizadoEm", notNullValue()));
     }
+
+    @Test
+    void deveDesativarProduto_eRetornar204() throws Exception {
+        ProdutoEntity salvo = produtoRepository.save(novoProduto("SSD 1TB", "399.90", true));
+
+        mockMvc.perform(delete("/produtos/{id}", salvo.getId()))
+                .andExpect(status().isNoContent());
+
+        ProdutoEntity atualizado = produtoRepository.findById(salvo.getId()).orElseThrow();
+        org.junit.jupiter.api.Assertions.assertFalse(atualizado.getAtivo());
+        org.junit.jupiter.api.Assertions.assertNotNull(atualizado.getAtualizadoEm());
+    }
 }
