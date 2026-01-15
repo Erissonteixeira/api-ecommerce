@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,5 +122,28 @@ class ProdutoServiceImplTest {
 
         verify(produtoRepository).findById(99L);
         verifyNoInteractions(produtoMapper);
+    }
+
+    @Test
+    void listarTodos_deveMapearCadaEntityParaResponse() {
+        var e1 = entityBase(1L, true);
+        var e2 = entityBase(2L, false);
+
+        var r1 = response(1L, true);
+        var r2 = response(2L, false);
+
+        when(produtoRepository.findAll()).thenReturn(List.of(e1, e2));
+        when(produtoMapper.toResponse(e1)).thenReturn(r1);
+        when(produtoMapper.toResponse(e2)).thenReturn(r2);
+
+        var lista = produtoService.listarTodos();
+
+        assertThat(lista).hasSize(2);
+        assertThat(lista.get(0).getId()).isEqualTo(1L);
+        assertThat(lista.get(1).getId()).isEqualTo(2L);
+
+        verify(produtoRepository).findAll();
+        verify(produtoMapper).toResponse(e1);
+        verify(produtoMapper).toResponse(e2);
     }
 }
