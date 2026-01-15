@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -91,5 +92,20 @@ class ProdutoServiceImplTest {
 
         verify(produtoMapper).toEntity(dto);
         verify(produtoMapper).toResponse(salvo);
+    }
+
+    @Test
+    void buscarPorId_quandoExiste_deveRetornarResponse() {
+        var entity = entityBase(10L, true);
+        var resp = response(10L, true);
+
+        when(produtoRepository.findById(10L)).thenReturn(Optional.of(entity));
+        when(produtoMapper.toResponse(entity)).thenReturn(resp);
+
+        var resultado = produtoService.buscarPorId(10L);
+
+        assertThat(resultado.getId()).isEqualTo(10L);
+        verify(produtoRepository).findById(10L);
+        verify(produtoMapper).toResponse(entity);
     }
 }
