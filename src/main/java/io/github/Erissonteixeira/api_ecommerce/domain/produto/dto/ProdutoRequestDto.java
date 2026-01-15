@@ -1,4 +1,4 @@
-package io.github.Erissonteixeira.api_ecommerce.domain.dto;
+package io.github.Erissonteixeira.api_ecommerce.domain.produto.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
