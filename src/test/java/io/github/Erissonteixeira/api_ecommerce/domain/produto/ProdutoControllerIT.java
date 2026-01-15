@@ -1,4 +1,4 @@
-package io.github.Erissonteixeira.api_ecommerce.domain.produto;
+package io.github.Erissonteixeira.api_ecommerce.domain.produto.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRequestDto;
@@ -16,8 +16,7 @@ import java.math.BigDecimal;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -88,5 +87,37 @@ class ProdutoControllerIT {
         mockMvc.perform(get("/produtos").param("ativos", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    void deveListarSomenteAtivos_quandoAtivosTrue() throws Exception {
+        produtoRepository.save(novoProduto("Ativo", "10.00", true));
+        produtoRepository.save(novoProduto("Inativo", "20.00", false));
+
+        mockMvc.perform(get("/produtos").param("ativos", "true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].nome").value("Ativo"))
+                .andExpect(jsonPath("$[0].ativo").value(true));
+    }
+
+    @Test
+    void deveAtualizarProduto() throws Exception {
+        ProdutoEntity salvo = produtoRepository.save(novoProduto("Monitor 24", "799.00", true));
+
+        ProdutoRequestDto dto = new ProdutoRequestDto();
+        dto.setNome("Monitor 27");
+        dto.setPreco(new BigDecimal("999.00"));
+        dto.setAtivo(true);
+
+        mockMvc.perform(put("/produtos/{id}", salvo.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(salvo.getId()))
+                .andExpect(jsonPath("$.nome").value("Monitor 27"))
+                .andExpect(jsonPath("$.preco").value(999.00))
+                .andExpect(jsonPath("$.ativo").value(true))
+                .andExpect(jsonPath("$.atualizadoEm", notNullValue()));
     }
 }
