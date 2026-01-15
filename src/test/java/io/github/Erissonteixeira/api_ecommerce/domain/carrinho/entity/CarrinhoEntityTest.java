@@ -1,5 +1,6 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity;
 
+import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -74,9 +75,11 @@ class CarrinhoEntityTest {
     void deveLancarErroAoRemoverProdutoInexistente() {
         CarrinhoEntity carrinho = new CarrinhoEntity();
 
-        assertThrows(
-                RuntimeException.class,
+        NegocioException ex = assertThrows(
+                NegocioException.class,
                 () -> carrinho.removerItem(99L)
         );
+
+        assertEquals("Produto não encontrado no carrinho", ex.getMessage());
     }
 }
