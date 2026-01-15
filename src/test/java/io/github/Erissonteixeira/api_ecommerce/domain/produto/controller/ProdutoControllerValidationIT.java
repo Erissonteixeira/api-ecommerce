@@ -99,4 +99,12 @@ class ProdutoControllerValidationIT {
                         .content(JSON_NOME_NULO))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void deveRetornar400_quandoCriarComPrecoNulo() throws Exception {
+        mockMvc.perform(post("/produtos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(JSON_PRECO_NULO))
+                .andExpect(status().isBadRequest());
+    }
 }
