@@ -47,7 +47,7 @@ class CarrinhoServiceImplTest {
 
     @Test
     void adicionarItem_deveAdicionarItemExistente() {
-        when(carrinhoRepository.findById(1L))
+        when(carrinhoRepository.buscarComItensPorId(1L))
                 .thenReturn(Optional.of(carrinho));
         when(carrinhoRepository.save(any(CarrinhoEntity.class)))
                 .thenReturn(carrinho);
@@ -71,8 +71,6 @@ class CarrinhoServiceImplTest {
 
     @Test
     void adicionarItem_quantidadeZeroDeveLancarExcecao() {
-        when(carrinhoRepository.findById(1L))
-                .thenReturn(Optional.of(carrinho));
 
         NegocioException exception = assertThrows(
                 NegocioException.class,
@@ -95,7 +93,7 @@ class CarrinhoServiceImplTest {
 
         carrinho.adicionarItem(item);
 
-        when(carrinhoRepository.findById(1L))
+        when(carrinhoRepository.buscarComItensPorId(1L))
                 .thenReturn(Optional.of(carrinho));
         when(carrinhoRepository.save(any(CarrinhoEntity.class)))
                 .thenReturn(carrinho);
@@ -107,7 +105,7 @@ class CarrinhoServiceImplTest {
 
     @Test
     void removerItem_carrinhoNaoExistenteDeveLancarExcecao() {
-        when(carrinhoRepository.findById(1L))
+        when(carrinhoRepository.buscarComItensPorId(1L))
                 .thenReturn(Optional.empty());
 
         RecursoNaoEncontradoException exception = assertThrows(
@@ -127,7 +125,7 @@ class CarrinhoServiceImplTest {
                 new ItemCarrinhoEntity(11L, "Produto B", new BigDecimal("30.00"), 1)
         );
 
-        when(carrinhoRepository.findById(1L))
+        when(carrinhoRepository.buscarComItensPorId(1L))
                 .thenReturn(Optional.of(carrinho));
 
         BigDecimal total = service.calcularTotal(1L);
@@ -137,7 +135,7 @@ class CarrinhoServiceImplTest {
 
     @Test
     void adicionarItem_deveRemoverEspacosDoNomeProduto() {
-        when(carrinhoRepository.findById(1L))
+        when(carrinhoRepository.buscarComItensPorId(1L))
                 .thenReturn(Optional.of(carrinho));
         when(carrinhoRepository.save(any(CarrinhoEntity.class)))
                 .thenReturn(carrinho);
@@ -152,5 +150,4 @@ class CarrinhoServiceImplTest {
 
         assertEquals("Produto Teste", resultado.getItens().get(0).getNomeProduto());
     }
-
 }
