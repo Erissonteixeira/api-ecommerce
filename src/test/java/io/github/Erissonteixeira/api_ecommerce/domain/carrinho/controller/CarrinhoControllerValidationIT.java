@@ -15,10 +15,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 @SpringBootTest
 @AutoConfigureMockMvc
 class CarrinhoControllerValidationIT {
+
+    private static final long ID_INEXISTENTE = 999999L;
 
     @Autowired
     private MockMvc mockMvc;
@@ -28,7 +29,7 @@ class CarrinhoControllerValidationIT {
 
     @Test
     void deveRetornar404_quandoBuscarCarrinhoInexistente() throws Exception {
-        mockMvc.perform(get("/carrinhos/{carrinhoId}", 999999L))
+        mockMvc.perform(get("/carrinhos/{carrinhoId}", ID_INEXISTENTE))
                 .andExpect(status().isNotFound());
     }
 
@@ -36,9 +37,15 @@ class CarrinhoControllerValidationIT {
     void deveRetornar404_quandoAdicionarItemEmCarrinhoInexistente() throws Exception {
         CarrinhoAdicionarItemRequestDto dto = dtoValido();
 
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", 999999L)
+        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", ID_INEXISTENTE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deveRetornar404_quandoCalcularTotalDeCarrinhoInexistente() throws Exception {
+        mockMvc.perform(get("/carrinhos/{carrinhoId}/total", ID_INEXISTENTE))
                 .andExpect(status().isNotFound());
     }
 
@@ -128,12 +135,6 @@ class CarrinhoControllerValidationIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{"))
                 .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void deveRetornar400_quandoCarrinhoIdForNuloNoTotalNaoFazSentidoMasNoPathVaiSempreTerValor_entaoTestaNaoEncontrado() throws Exception {
-        mockMvc.perform(get("/carrinhos/{carrinhoId}/total", 999999L))
-                .andExpect(status().isNotFound());
     }
 
     private CarrinhoAdicionarItemRequestDto dtoValido() {
