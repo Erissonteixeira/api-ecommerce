@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,7 +21,12 @@ public class GlobalExceptionHandler {
             RecursoNaoEncontradoException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
+        return build(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
     }
 
     @ExceptionHandler(NegocioException.class)
@@ -28,7 +34,12 @@ public class GlobalExceptionHandler {
             NegocioException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -42,7 +53,12 @@ public class GlobalExceptionHandler {
                 .map(this::toFieldError)
                 .toList();
 
-        return build(HttpStatus.BAD_REQUEST, "Dados inválidos", request.getRequestURI(), fieldErrors);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "Dados inválidos",
+                request.getRequestURI(),
+                fieldErrors
+        );
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -50,7 +66,25 @@ public class GlobalExceptionHandler {
             ConstraintViolationException ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.BAD_REQUEST, "Dados inválidos", request.getRequestURI(), null);
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "Dados inválidos",
+                request.getRequestURI(),
+                null
+        );
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> tratarJsonInvalido(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.BAD_REQUEST,
+                "JSON inválido",
+                request.getRequestURI(),
+                null
+        );
     }
 
     @ExceptionHandler(Exception.class)
@@ -58,7 +92,12 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado", request.getRequestURI(), null);
+        return build(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Erro interno inesperado",
+                request.getRequestURI(),
+                null
+        );
     }
 
     private FieldErrorResponse toFieldError(FieldError fe) {
