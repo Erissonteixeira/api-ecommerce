@@ -4,6 +4,9 @@ import io.github.Erissonteixeira.api_ecommerce.domain.pedido.dto.PedidoResponseD
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.mapper.PedidoMapper;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.service.PedidoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,12 +26,21 @@ public class PedidoController {
         this.pedidoMapper = pedidoMapper;
     }
 
+    @Operation(
+            summary = "Criar pedido a partir do carrinho",
+            description = "Fecha o carrinho e gera um pedido com snapshot dos itens"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Carrinho não encontrado"),
+            @ApiResponse(responseCode = "400", description = "Carrinho inválido")
+    })
     @PostMapping("/{carrinhoId}/pedido")
-    public ResponseEntity<PedidoResponseDto> criarPedido(@PathVariable Long carrinhoId) {
-
+    public ResponseEntity<PedidoResponseDto> criarPedido(
+            @PathVariable Long carrinhoId
+    ) {
         PedidoEntity pedido = pedidoService.criarPedidoDoCarrinho(carrinhoId);
-        PedidoResponseDto response = pedidoMapper.toResponseDto(pedido);
-
+        PedidoResponseDto response = pedidoMapper.toResponse(pedido);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
