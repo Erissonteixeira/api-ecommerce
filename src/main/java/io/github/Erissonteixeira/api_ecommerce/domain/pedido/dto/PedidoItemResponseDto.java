@@ -11,6 +11,9 @@ public class PedidoItemResponseDto {
     private Integer quantidade;
     private BigDecimal subtotal;
 
+    public PedidoItemResponseDto() {
+    }
+
     public Long getId() {
         return id;
     }
