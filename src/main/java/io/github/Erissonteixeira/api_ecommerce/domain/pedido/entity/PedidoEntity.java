@@ -19,15 +19,18 @@ public class PedidoEntity {
     @Column(name = "criado_em", nullable = false)
     private LocalDateTime criadoEm;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<PedidoItemEntity> itens = new ArrayList<>();
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private StatusPedido status;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
+
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<PedidoItemEntity> itens = new ArrayList<>();
 
     public PedidoEntity() {
     }
@@ -35,32 +38,35 @@ public class PedidoEntity {
     @PrePersist
     public void prePersist() {
         this.criadoEm = LocalDateTime.now();
-        if (this.status == null) {
-            this.status = StatusPedido.CRIADO;
-        }
-        if (this.total == null) {
-            this.total = BigDecimal.ZERO;
-        }
+        if (this.status == null) this.status = StatusPedido.CRIADO;
+        if (this.total == null) this.total = BigDecimal.ZERO;
     }
 
     @PreUpdate
     public void preUpdate() {
         this.atualizadoEm = LocalDateTime.now();
-        if (this.total == null) {
-            this.total = BigDecimal.ZERO;
-        }
+        if (this.total == null) this.total = BigDecimal.ZERO;
     }
 
     public void adicionarItem(PedidoItemEntity item) {
         if (item == null) return;
         item.setPedido(this);
         this.itens.add(item);
+        recalcularTotal();
     }
 
     public void removerItem(PedidoItemEntity item) {
         if (item == null) return;
         this.itens.remove(item);
-        item.setPedido(null);
+        recalcularTotal();
+    }
+
+    public void recalcularTotal() {
+        BigDecimal soma = BigDecimal.ZERO;
+        for (PedidoItemEntity item : itens) {
+            soma = soma.add(item.getSubtotal());
+        }
+        this.total = soma;
     }
 
     public Long getId() {
@@ -81,10 +87,6 @@ public class PedidoEntity {
 
     public BigDecimal getTotal() {
         return total;
-    }
-
-    public void setTotal(BigDecimal total) {
-        this.total = total == null ? BigDecimal.ZERO : total;
     }
 
     public List<PedidoItemEntity> getItens() {
