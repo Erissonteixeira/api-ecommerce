@@ -28,35 +28,18 @@ public class PedidoItemEntity {
     @Column(nullable = false)
     private Integer quantidade;
 
-    public PedidoItemEntity() {
+    protected PedidoItemEntity() {
     }
 
-    public PedidoItemEntity(
-            Long produtoId,
-            String nomeProduto,
-            BigDecimal precoUnitario,
-            Integer quantidade
-    ) {
+    public PedidoItemEntity(Long produtoId, String nomeProduto, BigDecimal precoUnitario, Integer quantidade) {
         this.produtoId = produtoId;
         this.nomeProduto = nomeProduto;
         this.precoUnitario = precoUnitario;
         this.quantidade = quantidade;
     }
 
-    public PedidoEntity getPedido() {
-        return pedido;
-    }
-
-    public void setPedido(PedidoEntity pedido) {
+    void setPedido(PedidoEntity pedido) {
         this.pedido = pedido;
-    }
-
-    @Transient
-    public BigDecimal getSubtotal() {
-        if (precoUnitario == null || quantidade == null) {
-            return BigDecimal.ZERO;
-        }
-        return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
     }
 
     public Long getId() {
@@ -77,5 +60,11 @@ public class PedidoItemEntity {
 
     public Integer getQuantidade() {
         return quantidade;
+    }
+
+    @Transient
+    public BigDecimal getSubtotal() {
+        if (precoUnitario == null || quantidade == null) return BigDecimal.ZERO;
+        return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
     }
 }
