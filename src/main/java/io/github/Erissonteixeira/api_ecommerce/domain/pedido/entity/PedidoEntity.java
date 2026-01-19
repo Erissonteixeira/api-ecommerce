@@ -57,8 +57,11 @@ public class PedidoEntity {
 
     public void removerItem(PedidoItemEntity item) {
         if (item == null) return;
-        this.itens.remove(item);
-        recalcularTotal();
+
+        if (this.itens.remove(item)) {
+            item.setPedido(null);
+            recalcularTotal();
+        }
     }
 
     public void recalcularTotal() {
