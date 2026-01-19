@@ -12,6 +12,10 @@ public interface PedidoMapper {
 
     PedidoResponseDto toResponseDto(PedidoEntity entity);
 
+    default PedidoResponseDto toResponse(PedidoEntity entity) {
+        return toResponseDto(entity);
+    }
+
     @Mapping(target = "subtotal", expression = "java(entity.getSubtotal())")
     PedidoItemResponseDto toItemResponseDto(PedidoItemEntity entity);
 }
