@@ -1,0 +1,73 @@
+package io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity;
+
+import jakarta.persistence.*;
+
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "pedido_itens")
+public class PedidoItemEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pedido_id", nullable = false)
+    private PedidoEntity pedido;
+
+    @Column(name = "produto_id", nullable = false)
+    private Long produtoId;
+
+    @Column(name = "nome_produto", nullable = false, length = 100)
+    private String nomeProduto;
+
+    @Column(name = "preco_unitario", nullable = false, precision = 10, scale = 2)
+    private BigDecimal precoUnitario;
+
+    @Column(nullable = false)
+    private Integer quantidade;
+
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal subtotal;
+
+    public PedidoItemEntity() {
+    }
+
+    public PedidoItemEntity(
+            Long produtoId,
+            String nomeProduto,
+            BigDecimal precoUnitario,
+            Integer quantidade
+    ) {
+        this.produtoId = produtoId;
+        this.nomeProduto = nomeProduto;
+        this.precoUnitario = precoUnitario;
+        this.quantidade = quantidade;
+        this.subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+    }
+
+    public void setPedido(PedidoEntity pedido) {
+        this.pedido = pedido;
+    }
+
+    public Long getProdutoId() {
+        return produtoId;
+    }
+
+    public String getNomeProduto() {
+        return nomeProduto;
+    }
+
+    public BigDecimal getPrecoUnitario() {
+        return precoUnitario;
+    }
+
+    public Integer getQuantidade() {
+        return quantidade;
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+}
