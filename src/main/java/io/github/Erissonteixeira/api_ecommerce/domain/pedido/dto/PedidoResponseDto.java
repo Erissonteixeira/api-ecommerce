@@ -15,6 +15,9 @@ public class PedidoResponseDto {
     private BigDecimal total;
     private List<PedidoItemResponseDto> itens;
 
+    public PedidoResponseDto() {
+    }
+
     public Long getId() {
         return id;
     }
