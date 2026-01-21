@@ -58,7 +58,6 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         }
 
         CarrinhoEntity carrinho = buscarPorId(carrinhoId);
-
         carrinho.removerItem(produtoId);
 
         return carrinhoRepository.save(carrinho);
@@ -71,7 +70,7 @@ public class CarrinhoServiceImpl implements CarrinhoService {
         }
 
         CarrinhoEntity carrinho = buscarPorId(carrinhoId);
-        return carrinho.calcularTotal();
+        return carrinho.getTotal();
     }
 
     @Override
