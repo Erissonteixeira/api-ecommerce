@@ -68,7 +68,7 @@ public class CarrinhoEntity {
         itens.remove(item);
     }
 
-    public BigDecimal calcularTotal() {
+    public BigDecimal getTotal() {
         return itens.stream()
                 .map(ItemCarrinhoEntity::calcularSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -87,6 +87,5 @@ public class CarrinhoEntity {
     }
 
     public List<ItemCarrinhoEntity> getItens() {
-        return itens;
-    }
+        return itens; }
 }
