@@ -1,5 +1,6 @@
-package io.github.Erissonteixeira.api_ecommerce.domain.produto.entity;
+package io.github.Erissonteixeira.api_ecommerce.domain.produto.repository;
 
+import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
