@@ -53,7 +53,7 @@ class CarrinhoEntityTest {
                 2L, "Produto B", new BigDecimal("20.00"), 1
         ));
 
-        BigDecimal total = carrinho.calcularTotal();
+        BigDecimal total = carrinho.getTotal();
 
         assertEquals(0, total.compareTo(new BigDecimal("40.00")));
     }
