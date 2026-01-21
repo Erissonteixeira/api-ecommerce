@@ -1,7 +1,7 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.Erissonteixeira.api_ecommerce.domain.dto.CarrinhoAdicionarItemRequestDto;
+import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.dto.CarrinhoAdicionarItemRequestDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.closeTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -58,9 +59,9 @@ class CarrinhoControllerIT {
                 .andExpect(jsonPath("$.itens.length()").value(1))
                 .andExpect(jsonPath("$.itens[0].produtoId").value(10))
                 .andExpect(jsonPath("$.itens[0].quantidade").value(2))
-                .andExpect(jsonPath("$.itens[0].precoUnitario").value(50.00))
-                .andExpect(jsonPath("$.itens[0].subtotal").value(100.00))
-                .andExpect(jsonPath("$.total").value(100.00));
+                .andExpect(jsonPath("$.itens[0].precoUnitario", closeTo(50.0, 0.0001)))
+                .andExpect(jsonPath("$.itens[0].subtotal", closeTo(100.0, 0.0001)))
+                .andExpect(jsonPath("$.total", closeTo(100.0, 0.0001)));
 
         String totalStr = mockMvc.perform(get("/carrinhos/{carrinhoId}/total", carrinhoId))
                 .andExpect(status().isOk())
@@ -99,7 +100,7 @@ class CarrinhoControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.itens.length()").value(1))
                 .andExpect(jsonPath("$.itens[0].quantidade").value(3))
-                .andExpect(jsonPath("$.total").value(150.00));
+                .andExpect(jsonPath("$.total", closeTo(150.0, 0.0001)));
     }
 
     @Test
@@ -124,7 +125,7 @@ class CarrinhoControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.itens.length()").value(1))
                 .andExpect(jsonPath("$.itens[0].quantidade").value(1))
-                .andExpect(jsonPath("$.total").value(50.00));
+                .andExpect(jsonPath("$.total", closeTo(50.0, 0.0001)));
 
         mockMvc.perform(delete("/carrinhos/{carrinhoId}/itens/{produtoId}", carrinhoId, 10L))
                 .andExpect(status().isNoContent());
@@ -132,7 +133,7 @@ class CarrinhoControllerIT {
         mockMvc.perform(get("/carrinhos/{carrinhoId}", carrinhoId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.itens.length()").value(0))
-                .andExpect(jsonPath("$.total").value(0));
+                .andExpect(jsonPath("$.total").value(0)); // <-- AQUI
     }
 
     private Long criarCarrinhoEObterId() throws Exception {
