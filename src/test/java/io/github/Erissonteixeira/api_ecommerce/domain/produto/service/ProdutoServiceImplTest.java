@@ -3,7 +3,7 @@ package io.github.Erissonteixeira.api_ecommerce.domain.produto.service;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRequestDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoEntity;
-import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoRepository;
+import io.github.Erissonteixeira.api_ecommerce.domain.produto.repository.ProdutoRepository;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.mapper.ProdutoMapper;
 import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.Test;
