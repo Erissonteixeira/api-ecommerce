@@ -3,6 +3,7 @@ package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Table(name = "itens_carrinho")
@@ -39,7 +40,18 @@ public class ItemCarrinhoEntity {
     }
 
     public BigDecimal calcularSubtotal() {
-        return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+        if (precoUnitario == null || quantidade == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        return precoUnitario
+                .multiply(BigDecimal.valueOf(quantidade))
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    @Transient
+    public BigDecimal getSubtotal() {
+        return calcularSubtotal();
     }
 
     public void incrementarQuantidade(Integer quantidade) {
