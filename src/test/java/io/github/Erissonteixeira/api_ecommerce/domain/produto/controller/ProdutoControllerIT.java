@@ -3,7 +3,7 @@ package io.github.Erissonteixeira.api_ecommerce.domain.produto.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRequestDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoEntity;
-import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoRepository;
+import io.github.Erissonteixeira.api_ecommerce.domain.produto.repository.ProdutoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,8 +24,10 @@ class ProdutoControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
     private ObjectMapper objectMapper;
+
     @Autowired
     private ProdutoRepository produtoRepository;
 
@@ -57,7 +58,7 @@ class ProdutoControllerIT {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.nome").value("Teclado Mecânico"))
-                .andExpect(jsonPath("$.preco").value(199.90))
+                .andExpect(jsonPath("$.preco", closeTo(199.90, 0.0001)))
                 .andExpect(jsonPath("$.ativo").value(true))
                 .andExpect(jsonPath("$.criadoEm", notNullValue()))
                 .andExpect(jsonPath("$.atualizadoEm").doesNotExist());
@@ -71,7 +72,7 @@ class ProdutoControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(salvo.getId()))
                 .andExpect(jsonPath("$.nome").value("Mouse Gamer"))
-                .andExpect(jsonPath("$.preco").value(99.90))
+                .andExpect(jsonPath("$.preco", closeTo(99.90, 0.0001)))
                 .andExpect(jsonPath("$.ativo").value(true));
     }
 
@@ -116,7 +117,7 @@ class ProdutoControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(salvo.getId()))
                 .andExpect(jsonPath("$.nome").value("Monitor 27"))
-                .andExpect(jsonPath("$.preco").value(999.00))
+                .andExpect(jsonPath("$.preco", closeTo(999.00, 0.0001)))
                 .andExpect(jsonPath("$.ativo").value(true))
                 .andExpect(jsonPath("$.atualizadoEm", notNullValue()));
     }
