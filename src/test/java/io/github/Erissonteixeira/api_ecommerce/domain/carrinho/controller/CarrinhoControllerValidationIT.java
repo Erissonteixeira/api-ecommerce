@@ -1,7 +1,7 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.Erissonteixeira.api_ecommerce.domain.dto.CarrinhoAdicionarItemRequestDto;
+import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.dto.CarrinhoAdicionarItemRequestDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
