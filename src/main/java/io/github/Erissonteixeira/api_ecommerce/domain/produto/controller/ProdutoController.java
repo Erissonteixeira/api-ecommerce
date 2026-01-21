@@ -104,10 +104,19 @@ public class ProdutoController {
         return produtoService.buscarPorId(id);
     }
 
-    @Operation(summary = "Listar todos os produtos", description = "Lista todos os produtos cadastrados.")
+    @Operation(
+            summary = "Listar produtos",
+            description = "Lista todos os produtos. Se a query param ativos=true, lista apenas os produtos ativos."
+    )
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping
-    public List<ProdutoResponseDto> listarTodos() {
+    public List<ProdutoResponseDto> listarTodos(
+            @Parameter(description = "Se true, retorna apenas produtos ativos. Se false ou não informado, retorna todos.", example = "true")
+            @RequestParam(name = "ativos", required = false) Boolean ativos
+    ) {
+        if (Boolean.TRUE.equals(ativos)) {
+            return produtoService.listarAtivos();
+        }
         return produtoService.listarTodos();
     }
 
