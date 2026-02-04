@@ -1,6 +1,9 @@
-FROM eclipse-temurin:17-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
+
+RUN addgroup -S app && adduser -S app -G app
+USER app
 
 COPY target/api-ecommerce-0.0.1-SNAPSHOT.jar app.jar
 
