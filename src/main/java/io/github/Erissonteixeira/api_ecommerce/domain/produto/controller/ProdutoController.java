@@ -3,7 +3,7 @@ package io.github.Erissonteixeira.api_ecommerce.domain.produto.controller;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRequestDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.service.ProdutoService;
-import io.github.Erissonteixeira.api_ecommerce.exception.OpenApiErrorSchemas;
+import io.github.Erissonteixeira.api_ecommerce.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,39 +32,48 @@ public class ProdutoController {
             summary = "Criar produto",
             description = "Cria um novo produto e retorna o produto criado."
     )
-    @ApiResponse(responseCode = "201", description = "Produto criado com sucesso",
-            content = @Content(mediaType = "application/json",
+    @ApiResponse(
+            responseCode = "201",
+            description = "Produto criado com sucesso",
+            content = @Content(
+                    mediaType = "application/json",
                     schema = @Schema(implementation = ProdutoResponseDto.class),
                     examples = @ExampleObject(value = """
-                                {
-                                  "id": 1,
-                                  "nome": "Mouse Gamer",
-                                  "preco": 199.90,
-                                  "ativo": true,
-                                  "criadoEm": "2026-01-16T10:00:00",
-                                  "atualizadoEm": null
-                                }
+                            {
+                              "id": 1,
+                              "nome": "Mouse Gamer",
+                              "preco": 199.90,
+                              "ativo": true,
+                              "criadoEm": "2026-01-16T10:00:00",
+                              "atualizadoEm": null
+                            }
                             """)
             )
     )
-    @ApiResponse(responseCode = "400", description = "Dados inválidos",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OpenApiErrorSchemas.class),
+    @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(value = """
-                                {
-                                  "timestamp":"2026-01-16T10:00:00-03:00",
-                                  "status":400,
-                                  "error":"Bad Request",
-                                  "message":"Dados inválidos",
-                                  "path":"/produtos",
-                                  "fieldErrors":[{"field":"nome","message":"não deve estar em branco"}]
-                                }
+                            {
+                              "timestamp":"2026-01-16T10:00:00-03:00",
+                              "status":400,
+                              "error":"Bad Request",
+                              "message":"Dados inválidos",
+                              "path":"/produtos",
+                              "fieldErrors":[{"field":"nome","message":"não deve estar em branco"}]
+                            }
                             """)
             )
     )
-    @ApiResponse(responseCode = "500", description = "Erro interno inesperado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OpenApiErrorSchemas.class)
+    @ApiResponse(
+            responseCode = "500",
+            description = "Erro interno inesperado",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)
             )
     )
     @PostMapping
@@ -77,22 +86,28 @@ public class ProdutoController {
             summary = "Buscar produto por ID",
             description = "Busca um produto pelo ID."
     )
-    @ApiResponse(responseCode = "200", description = "Produto encontrado",
-            content = @Content(mediaType = "application/json",
+    @ApiResponse(
+            responseCode = "200",
+            description = "Produto encontrado",
+            content = @Content(
+                    mediaType = "application/json",
                     schema = @Schema(implementation = ProdutoResponseDto.class)
             )
     )
-    @ApiResponse(responseCode = "404", description = "Produto não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OpenApiErrorSchemas.class),
+    @ApiResponse(
+            responseCode = "404",
+            description = "Produto não encontrado",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(value = """
-                                {
-                                  "timestamp":"2026-01-16T10:00:00-03:00",
-                                  "status":404,
-                                  "error":"Not Found",
-                                  "message":"Produto não encontrado",
-                                  "path":"/produtos/999"
-                                }
+                            {
+                              "timestamp":"2026-01-16T10:00:00-03:00",
+                              "status":404,
+                              "error":"Not Found",
+                              "message":"Produto não encontrado",
+                              "path":"/produtos/999"
+                            }
                             """)
             )
     )
@@ -128,13 +143,30 @@ public class ProdutoController {
     }
 
     @Operation(summary = "Atualizar produto", description = "Atualiza nome, preço e ativo de um produto.")
-    @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OpenApiErrorSchemas.class)))
-    @ApiResponse(responseCode = "404", description = "Produto não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OpenApiErrorSchemas.class)))
+    @ApiResponse(
+            responseCode = "200",
+            description = "Produto atualizado com sucesso",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ProdutoResponseDto.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Dados inválidos",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Produto não encontrado",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )
+    )
     @PutMapping("/{id}")
     public ProdutoResponseDto atualizar(
             @PathVariable Long id,
@@ -145,9 +177,14 @@ public class ProdutoController {
 
     @Operation(summary = "Desativar produto", description = "Marca o produto como ativo=false.")
     @ApiResponse(responseCode = "204", description = "Produto desativado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Produto não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OpenApiErrorSchemas.class)))
+    @ApiResponse(
+            responseCode = "404",
+            description = "Produto não encontrado",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)
+            )
+    )
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void desativar(@PathVariable Long id) {
