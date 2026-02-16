@@ -88,4 +88,8 @@ public class CarrinhoEntity {
 
     public List<ItemCarrinhoEntity> getItens() {
         return itens; }
+
+    public void limpar() {
+        this.itens.clear();
+    }
 }
