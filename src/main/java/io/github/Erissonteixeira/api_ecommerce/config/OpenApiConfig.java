@@ -16,7 +16,7 @@ public class OpenApiConfig {
                 return new OpenAPI()
                         .info(new Info()
                                 .title("API E-commerce")
-                                .description("API REST para gestão de produtos e carrinho de compras.")
+                                .description("API REST para gestão de produtos, carrinho e pedidos.")
                                 .version("v1")
                                 .contact(new Contact()
                                         .name("Erisson Teixeira")
@@ -42,6 +42,14 @@ public class OpenApiConfig {
                 return GroupedOpenApi.builder()
                         .group("Carrinhos")
                         .pathsToMatch("/carrinhos/**")
+                        .build();
+        }
+
+        @Bean
+        public GroupedOpenApi pedidosApi() {
+                return GroupedOpenApi.builder()
+                        .group("Pedidos")
+                        .pathsToMatch("/carrinhos/*/pedido")
                         .build();
         }
 }
