@@ -1,19 +1,21 @@
 package io.github.Erissonteixeira.api_ecommerce.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RecursoNaoEncontradoException.class)
@@ -21,12 +23,7 @@ public class GlobalExceptionHandler {
             RecursoNaoEncontradoException ex,
             HttpServletRequest request
     ) {
-        return build(
-                HttpStatus.NOT_FOUND,
-                ex.getMessage(),
-                request.getRequestURI(),
-                null
-        );
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(NegocioException.class)
@@ -34,12 +31,7 @@ public class GlobalExceptionHandler {
             NegocioException ex,
             HttpServletRequest request
     ) {
-        return build(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage(),
-                request.getRequestURI(),
-                null
-        );
+        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -53,12 +45,7 @@ public class GlobalExceptionHandler {
                 .map(this::toFieldError)
                 .toList();
 
-        return build(
-                HttpStatus.BAD_REQUEST,
-                "Dados inválidos",
-                request.getRequestURI(),
-                fieldErrors
-        );
+        return build(HttpStatus.BAD_REQUEST, "Dados inválidos", request.getRequestURI(), fieldErrors);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -66,12 +53,12 @@ public class GlobalExceptionHandler {
             ConstraintViolationException ex,
             HttpServletRequest request
     ) {
-        return build(
-                HttpStatus.BAD_REQUEST,
-                "Dados inválidos",
-                request.getRequestURI(),
-                null
-        );
+        List<FieldErrorResponse> fieldErrors = ex.getConstraintViolations()
+                .stream()
+                .map(this::toConstraintFieldError)
+                .toList();
+
+        return build(HttpStatus.BAD_REQUEST, "Dados inválidos", request.getRequestURI(), fieldErrors);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -79,12 +66,15 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException ex,
             HttpServletRequest request
     ) {
-        return build(
-                HttpStatus.BAD_REQUEST,
-                "JSON inválido",
-                request.getRequestURI(),
-                null
-        );
+        return build(HttpStatus.BAD_REQUEST, "JSON inválido", request.getRequestURI(), null);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> tratarViolacaoIntegridade(
+            DataIntegrityViolationException ex,
+            HttpServletRequest request
+    ) {
+        return build(HttpStatus.CONFLICT, "Conflito de dados", request.getRequestURI(), null);
     }
 
     @ExceptionHandler(Exception.class)
@@ -92,18 +82,21 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        return build(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "Erro interno inesperado",
-                request.getRequestURI(),
-                null
-        );
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado", request.getRequestURI(), null);
     }
 
     private FieldErrorResponse toFieldError(FieldError fe) {
         return FieldErrorResponse.builder()
                 .field(fe.getField())
                 .message(fe.getDefaultMessage())
+                .build();
+    }
+
+    private FieldErrorResponse toConstraintFieldError(ConstraintViolation<?> cv) {
+        String field = cv.getPropertyPath() != null ? cv.getPropertyPath().toString() : "param";
+        return FieldErrorResponse.builder()
+                .field(field)
+                .message(cv.getMessage())
                 .build();
     }
 
@@ -119,7 +112,7 @@ public class GlobalExceptionHandler {
                 .error(status.getReasonPhrase())
                 .message(message)
                 .path(path)
-                .fieldErrors(fieldErrors)
+                .fieldErrors(fieldErrors == null || fieldErrors.isEmpty() ? null : fieldErrors)
                 .build();
 
         return ResponseEntity.status(status).body(body);
