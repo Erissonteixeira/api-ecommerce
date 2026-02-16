@@ -6,6 +6,7 @@ import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.Carrin
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoItemEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.repository.PedidoRepository;
+import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
 import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +17,8 @@ public class PedidoServiceImpl implements PedidoService {
     private final CarrinhoRepository carrinhoRepository;
     private final PedidoRepository pedidoRepository;
 
-    public PedidoServiceImpl(CarrinhoRepository carrinhoRepository, PedidoRepository pedidoRepository) {
+    public PedidoServiceImpl(CarrinhoRepository carrinhoRepository,
+                             PedidoRepository pedidoRepository) {
         this.carrinhoRepository = carrinhoRepository;
         this.pedidoRepository = pedidoRepository;
     }
@@ -25,8 +27,16 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     public PedidoEntity criarPedidoDoCarrinho(Long carrinhoId) {
 
+        if (carrinhoId == null) {
+            throw new NegocioException("CarrinhoId não pode ser nulo");
+        }
+
         CarrinhoEntity carrinho = carrinhoRepository.buscarComItensPorId(carrinhoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho nao encontrado."));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho não encontrado"));
+
+        if (carrinho.getItens().isEmpty()) {
+            throw new NegocioException("Não é possível gerar pedido com carrinho vazio");
+        }
 
         PedidoEntity pedido = new PedidoEntity();
 
@@ -40,6 +50,11 @@ public class PedidoServiceImpl implements PedidoService {
             pedido.adicionarItem(pedidoItem);
         }
 
-        return pedidoRepository.save(pedido);
+        PedidoEntity salvo = pedidoRepository.save(pedido);
+
+        carrinho.getItens().clear();
+        carrinhoRepository.save(carrinho);
+
+        return salvo;
     }
 }
