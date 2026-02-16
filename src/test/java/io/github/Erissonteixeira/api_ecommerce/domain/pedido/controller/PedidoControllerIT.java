@@ -1,9 +1,10 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.pedido.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.ItemCarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.CarrinhoRepository;
+import io.github.Erissonteixeira.api_ecommerce.domain.pedido.repository.PedidoRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,7 +30,13 @@ class PedidoControllerIT {
     private CarrinhoRepository carrinhoRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private PedidoRepository pedidoRepository;
+
+    @BeforeEach
+    void setup() {
+        pedidoRepository.deleteAll();
+        carrinhoRepository.deleteAll();
+    }
 
     @Test
     void criarPedido_quandoCarrinhoExiste_deveRetornar201ComPedido() throws Exception {
@@ -44,7 +51,7 @@ class PedidoControllerIT {
         );
         carrinho.adicionarItem(item);
 
-        carrinho = carrinhoRepository.save(carrinho);
+        carrinho = carrinhoRepository.saveAndFlush(carrinho);
 
         mockMvc.perform(
                         post("/carrinhos/{id}/pedido", carrinho.getId())
