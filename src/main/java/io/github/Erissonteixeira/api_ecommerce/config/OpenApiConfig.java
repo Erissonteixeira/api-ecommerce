@@ -16,7 +16,7 @@ public class OpenApiConfig {
                 return new OpenAPI()
                         .info(new Info()
                                 .title("API E-commerce")
-                                .description("API REST para gestão de produtos, carrinho e pedidos.")
+                                .description("API REST para gestão de usuários, produtos, carrinho e pedidos.")
                                 .version("v1")
                                 .contact(new Contact()
                                         .name("Erisson Teixeira")
@@ -27,6 +27,14 @@ public class OpenApiConfig {
                                         .url("https://opensource.org/licenses/MIT")
                                 )
                         );
+        }
+
+        @Bean
+        public GroupedOpenApi usuariosApi() {
+                return GroupedOpenApi.builder()
+                        .group("Usuários")
+                        .pathsToMatch("/usuarios/**")
+                        .build();
         }
 
         @Bean
@@ -42,14 +50,6 @@ public class OpenApiConfig {
                 return GroupedOpenApi.builder()
                         .group("Carrinhos")
                         .pathsToMatch("/carrinhos/**")
-                        .build();
-        }
-
-        @Bean
-        public GroupedOpenApi pedidosApi() {
-                return GroupedOpenApi.builder()
-                        .group("Pedidos")
-                        .pathsToMatch("/carrinhos/*/pedido")
                         .build();
         }
 }
