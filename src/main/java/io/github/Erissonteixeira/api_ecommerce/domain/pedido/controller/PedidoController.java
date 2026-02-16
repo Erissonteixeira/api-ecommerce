@@ -7,6 +7,7 @@ import io.github.Erissonteixeira.api_ecommerce.domain.pedido.service.PedidoServi
 import io.github.Erissonteixeira.api_ecommerce.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,8 +30,30 @@ public class PedidoController {
 
     @Operation(summary = "Criar pedido a partir do carrinho", description = "Fecha o carrinho e gera um pedido com snapshot dos itens.")
     @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Carrinho não encontrado", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Carrinho inválido", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Carrinho não encontrado",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = """
+                            {
+                              "timestamp":"2026-01-16T10:00:00-03:00",
+                              "status":404,
+                              "error":"Not Found",
+                              "message":"Carrinho não encontrado",
+                              "path":"/carrinhos/999/pedido"
+                            }
+                            """)))
+    @ApiResponse(responseCode = "400", description = "Carrinho inválido",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class),
+                    examples = @ExampleObject(value = """
+                            {
+                              "timestamp":"2026-01-16T10:00:00-03:00",
+                              "status":400,
+                              "error":"Bad Request",
+                              "message":"Não é possível gerar pedido com carrinho vazio",
+                              "path":"/carrinhos/1/pedido"
+                            }
+                            """)))
     @PostMapping("/{carrinhoId}/pedido")
     public ResponseEntity<PedidoResponseDto> criarPedido(@PathVariable Long carrinhoId) {
         PedidoEntity pedido = pedidoService.criarPedidoDoCarrinho(carrinhoId);
