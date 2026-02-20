@@ -11,6 +11,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
+        private static final String GROUP_USUARIOS = "Usuarios";
+        private static final String GROUP_PRODUTOS = "Produtos";
+        private static final String GROUP_CARRINHOS = "Carrinhos";
+
         @Bean
         public OpenAPI openAPI() {
                 return new OpenAPI()
@@ -32,7 +36,7 @@ public class OpenApiConfig {
         @Bean
         public GroupedOpenApi usuariosApi() {
                 return GroupedOpenApi.builder()
-                        .group("Usuários")
+                        .group(GROUP_USUARIOS)
                         .pathsToMatch("/usuarios/**")
                         .build();
         }
@@ -40,7 +44,7 @@ public class OpenApiConfig {
         @Bean
         public GroupedOpenApi produtosApi() {
                 return GroupedOpenApi.builder()
-                        .group("Produtos")
+                        .group(GROUP_PRODUTOS)
                         .pathsToMatch("/produtos/**")
                         .build();
         }
@@ -48,7 +52,7 @@ public class OpenApiConfig {
         @Bean
         public GroupedOpenApi carrinhosApi() {
                 return GroupedOpenApi.builder()
-                        .group("Carrinhos")
+                        .group(GROUP_CARRINHOS)
                         .pathsToMatch("/carrinhos/**")
                         .build();
         }
