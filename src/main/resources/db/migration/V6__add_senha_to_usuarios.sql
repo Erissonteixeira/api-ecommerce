@@ -1,2 +1,0 @@
-ALTER TABLE usuarios
-ADD COLUMN senha VARCHAR(255);
