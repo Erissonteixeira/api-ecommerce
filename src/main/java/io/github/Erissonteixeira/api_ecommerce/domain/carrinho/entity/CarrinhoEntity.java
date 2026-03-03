@@ -1,5 +1,6 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity;
 
+import io.github.Erissonteixeira.api_ecommerce.domain.usuario.entity.UsuarioEntity;
 import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
 import jakarta.persistence.*;
 
@@ -22,10 +23,18 @@ public class CarrinhoEntity {
     @Column(name = "atualizado_em")
     private LocalDateTime atualizadoEm;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
+    private UsuarioEntity usuario;
+
     @OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ItemCarrinhoEntity> itens = new ArrayList<>();
 
     public CarrinhoEntity() {
+    }
+
+    public CarrinhoEntity(UsuarioEntity usuario) {
+        this.usuario = usuario;
     }
 
     @PrePersist
@@ -74,6 +83,10 @@ public class CarrinhoEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public void limpar() {
+        this.itens.clear();
+    }
+
     public Long getId() {
         return id;
     }
@@ -87,9 +100,14 @@ public class CarrinhoEntity {
     }
 
     public List<ItemCarrinhoEntity> getItens() {
-        return itens; }
+        return itens;
+    }
 
-    public void limpar() {
-        this.itens.clear();
+    public UsuarioEntity getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(UsuarioEntity usuario) {
+        this.usuario = usuario;
     }
 }
