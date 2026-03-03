@@ -9,3 +9,8 @@ spring:
 
   flyway:
     enabled: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:uma-chave-bem-grande-com-pelo-menos-32-caracteres!!!}
+    expiration-minutes: ${JWT_EXP_MINUTES:120}
