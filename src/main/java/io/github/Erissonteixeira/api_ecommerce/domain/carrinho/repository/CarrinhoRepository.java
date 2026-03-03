@@ -9,6 +9,9 @@ import java.util.Optional;
 
 @Repository
 public interface CarrinhoRepository extends JpaRepository<CarrinhoEntity, Long> {
+
     @Query("select c from CarrinhoEntity c left join fetch c.itens where c.id = :id")
     Optional<CarrinhoEntity> buscarComItensPorId(Long id);
+
+    Optional<CarrinhoEntity> findByUsuarioId(Long usuarioId);
 }
