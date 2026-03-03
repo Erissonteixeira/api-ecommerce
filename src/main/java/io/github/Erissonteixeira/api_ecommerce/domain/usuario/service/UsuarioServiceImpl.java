@@ -7,6 +7,7 @@ import io.github.Erissonteixeira.api_ecommerce.domain.usuario.mapper.UsuarioMapp
 import io.github.Erissonteixeira.api_ecommerce.domain.usuario.repository.UsuarioRepository;
 import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
 import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,19 +19,32 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final UsuarioMapper usuarioMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, UsuarioMapper usuarioMapper) {
+    public UsuarioServiceImpl(
+            UsuarioRepository usuarioRepository,
+            UsuarioMapper usuarioMapper,
+            PasswordEncoder passwordEncoder
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioMapper = usuarioMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional
     public UsuarioResponseDto criar(UsuarioRequestDto dto) {
+
         UsuarioEntity entity = usuarioMapper.toEntity(dto);
 
         normalizar(entity);
         validarUnicidade(entity, null);
+
+        if (entity.getSenha() == null || entity.getSenha().isBlank()) {
+            throw new NegocioException("Senha é obrigatória");
+        }
+
+        entity.setSenha(passwordEncoder.encode(entity.getSenha()));
 
         UsuarioEntity salvo = usuarioRepository.save(entity);
         return usuarioMapper.toResponse(salvo);
@@ -53,6 +67,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional
     public UsuarioResponseDto atualizar(Long id, UsuarioRequestDto dto) {
+
         UsuarioEntity existente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
 
@@ -60,7 +75,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         existente.setEmail(dto.getEmail());
         existente.setWhatsapp(dto.getWhatsapp());
         existente.setCpf(dto.getCpf());
-        existente.setSenha(dto.getSenha());
+
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            existente.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
 
         normalizar(existente);
         validarUnicidade(existente, id);
@@ -93,11 +111,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     private void validarUnicidade(UsuarioEntity u, Long idAtualizacao) {
+
         String email = u.getEmail();
         String cpf = u.getCpf();
 
-        if (email == null || email.isBlank()) throw new NegocioException("E-mail é obrigatório");
-        if (cpf == null || cpf.isBlank()) throw new NegocioException("CPF é obrigatório");
+        if (email == null || email.isBlank())
+            throw new NegocioException("E-mail é obrigatório");
+
+        if (cpf == null || cpf.isBlank())
+            throw new NegocioException("CPF é obrigatório");
 
         boolean emailJaExiste = usuarioRepository.existsByEmail(email);
         boolean cpfJaExiste = usuarioRepository.existsByCpf(cpf);
