@@ -6,6 +6,8 @@ import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.Carrin
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoItemEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.repository.PedidoRepository;
+import io.github.Erissonteixeira.api_ecommerce.domain.usuario.entity.UsuarioEntity;
+import io.github.Erissonteixeira.api_ecommerce.domain.usuario.repository.UsuarioRepository;
 import io.github.Erissonteixeira.api_ecommerce.exception.NegocioException;
 import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
 import org.springframework.stereotype.Service;
@@ -16,22 +18,32 @@ public class PedidoServiceImpl implements PedidoService {
 
     private final CarrinhoRepository carrinhoRepository;
     private final PedidoRepository pedidoRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public PedidoServiceImpl(CarrinhoRepository carrinhoRepository,
-                             PedidoRepository pedidoRepository) {
+    public PedidoServiceImpl(
+            CarrinhoRepository carrinhoRepository,
+            PedidoRepository pedidoRepository,
+            UsuarioRepository usuarioRepository
+    ) {
         this.carrinhoRepository = carrinhoRepository;
         this.pedidoRepository = pedidoRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @Override
     @Transactional
-    public PedidoEntity criarPedidoDoCarrinho(Long carrinhoId) {
+    public PedidoEntity criarPedidoDoCarrinho(String email) {
 
-        if (carrinhoId == null) {
-            throw new NegocioException("CarrinhoId não pode ser nulo");
+        if (email == null || email.trim().isEmpty()) {
+            throw new NegocioException("Email inválido");
         }
 
-        CarrinhoEntity carrinho = carrinhoRepository.buscarComItensPorId(carrinhoId)
+        String normalized = email.trim().toLowerCase();
+
+        UsuarioEntity usuario = usuarioRepository.findByEmail(normalized)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
+
+        CarrinhoEntity carrinho = carrinhoRepository.buscarPorUsuarioIdComItens(usuario.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho não encontrado"));
 
         if (carrinho.getItens().isEmpty()) {
@@ -52,7 +64,7 @@ public class PedidoServiceImpl implements PedidoService {
 
         PedidoEntity salvo = pedidoRepository.save(pedido);
 
-        carrinho.getItens().clear();
+        carrinho.limpar();
         carrinhoRepository.save(carrinho);
 
         return salvo;
