@@ -5,22 +5,17 @@ import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.dto.CarrinhoRespo
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.mapper.CarrinhoMapper;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.service.CarrinhoService;
-import io.github.Erissonteixeira.api_ecommerce.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-
-@Tag(name = "Carrinhos", description = "Endpoints para carrinho de compras")
+@Tag(name = "Carrinho", description = "Endpoints do carrinho do usuário logado")
 @RestController
-@RequestMapping("/carrinhos")
+@RequestMapping("/carrinho")
 public class CarrinhoController {
 
     private final CarrinhoService carrinhoService;
@@ -31,137 +26,44 @@ public class CarrinhoController {
         this.carrinhoMapper = carrinhoMapper;
     }
 
-    @Operation(summary = "Criar carrinho", description = "Cria um novo carrinho vazio.")
-    @ApiResponse(responseCode = "201", description = "Carrinho criado com sucesso")
-    @ApiResponse(responseCode = "500", description = "Erro interno inesperado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":500,
-                              "error":"Internal Server Error",
-                              "message":"Erro interno inesperado",
-                              "path":"/carrinhos"
-                            }
-                            """)))
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CarrinhoResponseDto criarCarrinho() {
-        CarrinhoEntity carrinho = carrinhoService.criarCarrinho();
+    @Operation(summary = "Meu carrinho", description = "Retorna o carrinho do usuário logado (cria se não existir).")
+    @ApiResponse(responseCode = "200", description = "Carrinho retornado com sucesso")
+    @GetMapping
+    public CarrinhoResponseDto meuCarrinho(Authentication authentication) {
+        CarrinhoEntity carrinho = carrinhoService.obterOuCriarCarrinho(authentication.getName());
         return carrinhoMapper.toResponseDto(carrinho);
     }
 
-    @Operation(summary = "Buscar carrinho", description = "Busca o carrinho pelo ID, trazendo itens.")
-    @ApiResponse(responseCode = "200", description = "Carrinho encontrado")
-    @ApiResponse(responseCode = "404", description = "Carrinho não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":404,
-                              "error":"Not Found",
-                              "message":"Carrinho não encontrado",
-                              "path":"/carrinhos/999"
-                            }
-                            """)))
-    @GetMapping("/{carrinhoId}")
-    public CarrinhoResponseDto buscar(@PathVariable Long carrinhoId) {
-        CarrinhoEntity carrinho = carrinhoService.buscarPorId(carrinhoId);
-        return carrinhoMapper.toResponseDto(carrinho);
-    }
-
-    @Operation(summary = "Adicionar item", description = "Adiciona um produto no carrinho ou incrementa a quantidade se já existir.")
+    @Operation(summary = "Adicionar item", description = "Adiciona item no carrinho do usuário logado.")
     @ApiResponse(responseCode = "200", description = "Item adicionado com sucesso")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":400,
-                              "error":"Bad Request",
-                              "message":"Dados inválidos",
-                              "path":"/carrinhos/1/itens",
-                              "fieldErrors":[{"field":"quantidade","message":"deve ser maior que 0"}]
-                            }
-                            """)))
-    @ApiResponse(responseCode = "404", description = "Carrinho não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":404,
-                              "error":"Not Found",
-                              "message":"Carrinho não encontrado",
-                              "path":"/carrinhos/999/itens"
-                            }
-                            """)))
-    @PostMapping("/{carrinhoId}/itens")
+    @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    @ApiResponse(responseCode = "404", description = "Produto não encontrado")
+    @PostMapping("/itens")
     public CarrinhoResponseDto adicionarItem(
-            @PathVariable Long carrinhoId,
+            Authentication authentication,
             @Valid @RequestBody CarrinhoAdicionarItemRequestDto dto
     ) {
         CarrinhoEntity carrinho = carrinhoService.adicionarItem(
-                carrinhoId,
+                authentication.getName(),
                 dto.getProdutoId(),
-                dto.getNomeProduto(),
-                dto.getPreco(),
                 dto.getQuantidade()
         );
         return carrinhoMapper.toResponseDto(carrinho);
     }
 
-    @Operation(summary = "Remover item", description = "Remove 1 unidade do produto. Se quantidade virar 0, remove o item do carrinho.")
+    @Operation(summary = "Remover item", description = "Remove 1 unidade do produto; se zerar, remove o item.")
     @ApiResponse(responseCode = "204", description = "Item removido com sucesso")
-    @ApiResponse(responseCode = "400", description = "Dados inválidos",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":400,
-                              "error":"Bad Request",
-                              "message":"Produto não encontrado no carrinho",
-                              "path":"/carrinhos/1/itens/10"
-                            }
-                            """)))
-    @ApiResponse(responseCode = "404", description = "Carrinho não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":404,
-                              "error":"Not Found",
-                              "message":"Carrinho não encontrado",
-                              "path":"/carrinhos/999/itens/10"
-                            }
-                            """)))
-    @DeleteMapping("/{carrinhoId}/itens/{produtoId}")
+    @DeleteMapping("/itens/{produtoId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removerItem(@PathVariable Long carrinhoId, @PathVariable Long produtoId) {
-        carrinhoService.removerItem(carrinhoId, produtoId);
+    public void removerItem(Authentication authentication, @PathVariable Long produtoId) {
+        carrinhoService.removerItem(authentication.getName(), produtoId);
     }
 
-    @Operation(summary = "Total do carrinho", description = "Calcula o total do carrinho.")
-    @ApiResponse(responseCode = "200", description = "Total calculado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Carrinho não encontrado",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "timestamp":"2026-01-16T10:00:00-03:00",
-                              "status":404,
-                              "error":"Not Found",
-                              "message":"Carrinho não encontrado",
-                              "path":"/carrinhos/999/total"
-                            }
-                            """)))
-    @GetMapping("/{carrinhoId}/total")
-    public BigDecimal total(@PathVariable Long carrinhoId) {
-        return carrinhoService.calcularTotal(carrinhoId);
+    @Operation(summary = "Limpar carrinho", description = "Remove todos os itens do carrinho do usuário logado.")
+    @ApiResponse(responseCode = "204", description = "Carrinho limpo com sucesso")
+    @DeleteMapping("/limpar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void limpar(Authentication authentication) {
+        carrinhoService.limpar(authentication.getName());
     }
 }
