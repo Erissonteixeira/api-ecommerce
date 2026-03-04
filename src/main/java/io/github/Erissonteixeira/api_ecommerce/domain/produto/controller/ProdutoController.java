@@ -28,15 +28,9 @@ public class ProdutoController {
         this.produtoService = produtoService;
     }
 
-    @Operation(
-            summary = "Criar produto",
-            description = "Cria um novo produto e retorna o produto criado."
-    )
-    @ApiResponse(
-            responseCode = "201",
-            description = "Produto criado com sucesso",
-            content = @Content(
-                    mediaType = "application/json",
+    @Operation(summary = "Criar produto", description = "Cria um novo produto e retorna o produto criado.")
+    @ApiResponse(responseCode = "201", description = "Produto criado com sucesso",
+            content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ProdutoResponseDto.class),
                     examples = @ExampleObject(value = """
                             {
@@ -47,14 +41,9 @@ public class ProdutoController {
                               "criadoEm": "2026-01-16T10:00:00",
                               "atualizadoEm": null
                             }
-                            """)
-            )
-    )
-    @ApiResponse(
-            responseCode = "400",
-            description = "Dados inválidos",
-            content = @Content(
-                    mediaType = "application/json",
+                            """)))
+    @ApiResponse(responseCode = "400", description = "Dados inválidos",
+            content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(value = """
                             {
@@ -65,40 +54,22 @@ public class ProdutoController {
                               "path":"/produtos",
                               "fieldErrors":[{"field":"nome","message":"não deve estar em branco"}]
                             }
-                            """)
-            )
-    )
-    @ApiResponse(
-            responseCode = "500",
-            description = "Erro interno inesperado",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
-    )
+                            """)))
+    @ApiResponse(responseCode = "500", description = "Erro interno inesperado",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)))
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProdutoResponseDto criar(@RequestBody @Valid ProdutoRequestDto dto) {
         return produtoService.criar(dto);
     }
 
-    @Operation(
-            summary = "Buscar produto por ID",
-            description = "Busca um produto pelo ID."
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Produto encontrado",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ProdutoResponseDto.class)
-            )
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Produto não encontrado",
-            content = @Content(
-                    mediaType = "application/json",
+    @Operation(summary = "Buscar produto por ID", description = "Busca um produto ativo pelo ID. Se estiver inativo, retorna 404.")
+    @ApiResponse(responseCode = "200", description = "Produto encontrado",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ProdutoResponseDto.class)))
+    @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+            content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = ErrorResponse.class),
                     examples = @ExampleObject(value = """
                             {
@@ -108,9 +79,7 @@ public class ProdutoController {
                               "message":"Produto não encontrado",
                               "path":"/produtos/999"
                             }
-                            """)
-            )
-    )
+                            """)))
     @GetMapping("/{id}")
     public ProdutoResponseDto buscarPorId(
             @Parameter(description = "ID do produto", example = "1")
@@ -119,54 +88,30 @@ public class ProdutoController {
         return produtoService.buscarPorId(id);
     }
 
-    @Operation(
-            summary = "Listar produtos",
-            description = "Lista todos os produtos. Se a query param ativos=true, lista apenas os produtos ativos."
-    )
+    @Operation(summary = "Listar produtos", description = "Lista apenas produtos ativos (loja pública).")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping
-    public List<ProdutoResponseDto> listarTodos(
-            @Parameter(description = "Se true, retorna apenas produtos ativos. Se false ou não informado, retorna todos.", example = "true")
-            @RequestParam(name = "ativos", required = false) Boolean ativos
-    ) {
-        if (Boolean.TRUE.equals(ativos)) {
-            return produtoService.listarAtivos();
-        }
-        return produtoService.listarTodos();
+    public List<ProdutoResponseDto> listar() {
+        return produtoService.listar();
     }
 
     @Operation(summary = "Listar produtos ativos", description = "Lista apenas produtos com ativo=true.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     @GetMapping("/ativos")
     public List<ProdutoResponseDto> listarAtivos() {
-        return produtoService.listarAtivos();
+        return produtoService.listar();
     }
 
     @Operation(summary = "Atualizar produto", description = "Atualiza nome, preço e ativo de um produto.")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Produto atualizado com sucesso",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ProdutoResponseDto.class)
-            )
-    )
-    @ApiResponse(
-            responseCode = "400",
-            description = "Dados inválidos",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
-    )
-    @ApiResponse(
-            responseCode = "404",
-            description = "Produto não encontrado",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
-    )
+    @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ProdutoResponseDto.class)))
+    @ApiResponse(responseCode = "400", description = "Dados inválidos",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)))
     @PutMapping("/{id}")
     public ProdutoResponseDto atualizar(
             @PathVariable Long id,
@@ -177,14 +122,9 @@ public class ProdutoController {
 
     @Operation(summary = "Desativar produto", description = "Marca o produto como ativo=false.")
     @ApiResponse(responseCode = "204", description = "Produto desativado com sucesso")
-    @ApiResponse(
-            responseCode = "404",
-            description = "Produto não encontrado",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ErrorResponse.class)
-            )
-    )
+    @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = ErrorResponse.class)))
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void desativar(@PathVariable Long id) {
