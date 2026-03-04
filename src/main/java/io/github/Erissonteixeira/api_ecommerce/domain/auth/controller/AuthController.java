@@ -7,6 +7,7 @@ import io.github.Erissonteixeira.api_ecommerce.domain.auth.dto.response.TokenRes
 import io.github.Erissonteixeira.api_ecommerce.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,7 +33,15 @@ public class AuthController {
     @GetMapping("/me")
     public MeResponseDto me(Authentication authentication) {
 
-        String email = (String) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        String email;
+
+        if (principal instanceof UserDetails userDetails) {
+            email = userDetails.getUsername();
+        } else {
+            email = authentication.getName();
+        }
+
         return authService.me(email);
     }
 }
