@@ -17,6 +17,8 @@ import java.io.IOException;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private static final String BEARER_PREFIX = "Bearer ";
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
@@ -34,14 +36,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String header = request.getHeader("Authorization");
 
-        if (header == null || !header.startsWith("Bearer ")) {
+        if (header == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = header.substring(7);
+        String token;
+        if (header.startsWith(BEARER_PREFIX)) {
+            token = header.substring(BEARER_PREFIX.length());
+        } else if (header.startsWith("bearer ")) {
+            token = header.substring("bearer ".length());
+        } else {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-        if (!jwtService.tokenValido(token) || SecurityContextHolder.getContext().getAuthentication() != null) {
+        if (token.isBlank() || SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (!jwtService.tokenValido(token)) {
             filterChain.doFilter(request, response);
             return;
         }
