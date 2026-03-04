@@ -5,15 +5,14 @@ import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.dto.CarrinhoRespo
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.ItemCarrinhoEntity;
 import org.mapstruct.Mapper;
-
-import java.util.List;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CarrinhoMapper {
 
+    @Mapping(target = "total", expression = "java(entity.getTotal())")
     CarrinhoResponseDto toResponseDto(CarrinhoEntity entity);
 
+    @Mapping(target = "subtotal", expression = "java(entity.getSubtotal())")
     CarrinhoItemResponseDto toItemResponseDto(ItemCarrinhoEntity entity);
-
-    List<CarrinhoItemResponseDto> toItemResponseDtoList(List<ItemCarrinhoEntity> itens);
 }
