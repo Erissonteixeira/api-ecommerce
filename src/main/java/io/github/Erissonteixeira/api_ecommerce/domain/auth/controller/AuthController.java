@@ -6,9 +6,10 @@ import io.github.Erissonteixeira.api_ecommerce.domain.auth.dto.response.MeRespon
 import io.github.Erissonteixeira.api_ecommerce.domain.auth.dto.response.TokenResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
@@ -32,16 +33,9 @@ public class AuthController {
 
     @GetMapping("/me")
     public MeResponseDto me(Authentication authentication) {
-
-        Object principal = authentication.getPrincipal();
-        String email;
-
-        if (principal instanceof UserDetails userDetails) {
-            email = userDetails.getUsername();
-        } else {
-            email = authentication.getName();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Não autenticado");
         }
-
-        return authService.me(email);
+        return authService.me(authentication.getName());
     }
 }
