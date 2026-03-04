@@ -2,26 +2,13 @@ package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.service;
 
 import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
 
-import java.math.BigDecimal;
-
 public interface CarrinhoService {
 
-    CarrinhoEntity criarCarrinho();
+    CarrinhoEntity obterOuCriarCarrinho(String email);
 
-    CarrinhoEntity adicionarItem(
-            Long carrinhoId,
-            Long produtoId,
-            String nomeProduto,
-            BigDecimal preco,
-            Integer quantidade
-    );
+    CarrinhoEntity adicionarItem(String email, Long produtoId, Integer quantidade);
 
-    CarrinhoEntity removerItem(
-            Long carrinhoId,
-            Long produtoId
-    );
+    CarrinhoEntity removerItem(String email, Long produtoId);
 
-    BigDecimal calcularTotal(Long carrinhoId);
-
-    CarrinhoEntity buscarPorId(Long carrinhoId);
+    void limpar(String email);
 }
