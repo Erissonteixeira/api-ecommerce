@@ -47,7 +47,9 @@ public class AuthServiceImpl implements AuthService {
 
         usuarioService.criar(u);
 
-        UsuarioEntity salvo = usuarioRepository.findByEmail(dto.getEmail().trim().toLowerCase())
+        String email = dto.getEmail().trim().toLowerCase();
+
+        UsuarioEntity salvo = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> new NegocioException("Falha ao criar usuário"));
 
         String token = jwtService.gerarToken(salvo.getId(), salvo.getEmail());
@@ -71,7 +73,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public MeResponseDto me(String email) {
-        UsuarioEntity user = usuarioRepository.findByEmail(email)
+        String normalized = email == null ? "" : email.trim().toLowerCase();
+
+        UsuarioEntity user = usuarioRepository.findByEmail(normalized)
                 .orElseThrow(() -> new NegocioException("Usuário não encontrado"));
 
         return new MeResponseDto(user.getId(), user.getNome(), user.getEmail());
