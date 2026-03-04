@@ -27,8 +27,13 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Override
     public ProdutoResponseDto criar(ProdutoRequestDto dto) {
         ProdutoEntity entity = produtoMapper.toEntity(dto);
+
         entity.setCriadoEm(LocalDateTime.now());
         entity.setAtualizadoEm(null);
+
+        if (entity.getAtivo() == null) {
+            entity.setAtivo(true);
+        }
 
         ProdutoEntity salvo = produtoRepository.save(entity);
         return produtoMapper.toResponse(salvo);
@@ -37,24 +42,15 @@ public class ProdutoServiceImpl implements ProdutoService {
     @Override
     @Transactional(readOnly = true)
     public ProdutoResponseDto buscarPorId(Long id) {
-        ProdutoEntity entity = produtoRepository.findById(id)
+        ProdutoEntity entity = produtoRepository.findByIdAndAtivoTrue(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
         return produtoMapper.toResponse(entity);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProdutoResponseDto> listarTodos() {
-        return produtoRepository.findAll()
-                .stream()
-                .map(produtoMapper::toResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProdutoResponseDto> listarAtivos() {
-        return produtoRepository.findByAtivoTrue()
+    public List<ProdutoResponseDto> listar() {
+        return produtoRepository.findAllByAtivoTrue()
                 .stream()
                 .map(produtoMapper::toResponse)
                 .toList();
@@ -62,6 +58,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
     @Override
     public ProdutoResponseDto atualizar(Long id, ProdutoRequestDto dto) {
+
         ProdutoEntity existente = produtoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
 
@@ -81,6 +78,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
         existente.setAtivo(false);
         existente.setAtualizadoEm(LocalDateTime.now());
+
         produtoRepository.save(existente);
     }
 }
