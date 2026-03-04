@@ -11,9 +11,7 @@ public interface ProdutoService {
 
     ProdutoResponseDto buscarPorId(Long id);
 
-    List<ProdutoResponseDto> listarTodos();
-
-    List<ProdutoResponseDto> listarAtivos();
+    List<ProdutoResponseDto> listar();
 
     ProdutoResponseDto atualizar(Long id, ProdutoRequestDto dto);
 
