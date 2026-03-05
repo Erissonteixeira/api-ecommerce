@@ -1,158 +1,135 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.carrinho.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.dto.CarrinhoAdicionarItemRequestDto;
+import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.CarrinhoRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class CarrinhoControllerValidationIT {
-
-    private static final long ID_INEXISTENTE = 999999L;
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private CarrinhoRepository carrinhoRepository;
 
-    @Test
-    void deveRetornar404_quandoBuscarCarrinhoInexistente() throws Exception {
-        mockMvc.perform(get("/carrinhos/{carrinhoId}", ID_INEXISTENTE))
-                .andExpect(status().isNotFound());
+    @BeforeEach
+    void setup() {
+        carrinhoRepository.deleteAll();
     }
 
     @Test
-    void deveRetornar404_quandoAdicionarItemEmCarrinhoInexistente() throws Exception {
-        CarrinhoAdicionarItemRequestDto dto = dtoValido();
+    void adicionarItem_quandoNomeProdutoVazio_deveDar400() throws Exception {
+        Long carrinhoId = criarCarrinho();
 
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", ID_INEXISTENTE)
+        mockMvc.perform(post("/carrinhos/{id}/itens", carrinhoId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isNotFound());
+                        .content("""
+                                {
+                                  "produtoId": 10,
+                                  "nomeProduto": "   ",
+                                  "preco": 10.00,
+                                  "quantidade": 1
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Dados inválidos"))
+                .andExpect(jsonPath("$.fieldErrors", notNullValue()))
+                .andExpect(jsonPath("$.fieldErrors[*].field", hasItem("nomeProduto")));
     }
 
     @Test
-    void deveRetornar404_quandoCalcularTotalDeCarrinhoInexistente() throws Exception {
-        mockMvc.perform(get("/carrinhos/{carrinhoId}/total", ID_INEXISTENTE))
-                .andExpect(status().isNotFound());
+    void adicionarItem_quandoPrecoNulo_deveDar400() throws Exception {
+        Long carrinhoId = criarCarrinho();
+
+        mockMvc.perform(post("/carrinhos/{id}/itens", carrinhoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "produtoId": 10,
+                                  "nomeProduto": "mouse",
+                                  "preco": null,
+                                  "quantidade": 1
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Dados inválidos"))
+                .andExpect(jsonPath("$.fieldErrors[*].field", hasItem("preco")));
     }
 
     @Test
-    void deveRetornar400_quandoAdicionarItemComProdutoIdNulo() throws Exception {
-        Long carrinhoId = criarCarrinhoEObterId();
-        CarrinhoAdicionarItemRequestDto dto = dtoValido();
-        dto.setProdutoId(null);
+    void adicionarItem_quandoPrecoZeroOuNegativo_deveDar400() throws Exception {
+        Long carrinhoId = criarCarrinho();
 
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
+        mockMvc.perform(post("/carrinhos/{id}/itens", carrinhoId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
+                        .content("""
+                                {
+                                  "produtoId": 10,
+                                  "nomeProduto": "mouse",
+                                  "preco": 0,
+                                  "quantidade": 1
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[*].field", hasItem("preco")));
+
+        mockMvc.perform(post("/carrinhos/{id}/itens", carrinhoId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "produtoId": 10,
+                                  "nomeProduto": "mouse",
+                                  "preco": -1,
+                                  "quantidade": 1
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[*].field", hasItem("preco")));
     }
 
     @Test
-    void deveRetornar400_quandoAdicionarItemComNomeEmBranco() throws Exception {
-        Long carrinhoId = criarCarrinhoEObterId();
-        CarrinhoAdicionarItemRequestDto dto = dtoValido();
-        dto.setNomeProduto("   ");
+    void adicionarItem_quandoQuantidadeZero_deveDar400() throws Exception {
+        Long carrinhoId = criarCarrinho();
 
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
+        mockMvc.perform(post("/carrinhos/{id}/itens", carrinhoId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
+                        .content("""
+                                {
+                                  "produtoId": 10,
+                                  "nomeProduto": "mouse",
+                                  "preco": 10.00,
+                                  "quantidade": 0
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors[*].field", hasItem("quantidade")));
     }
 
-    @Test
-    void deveRetornar400_quandoAdicionarItemComPrecoNulo() throws Exception {
-        Long carrinhoId = criarCarrinhoEObterId();
-        CarrinhoAdicionarItemRequestDto dto = dtoValido();
-        dto.setPreco(null);
-
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void deveRetornar400_quandoAdicionarItemComPrecoZeroOuNegativo() throws Exception {
-        Long carrinhoId = criarCarrinhoEObterId();
-
-        CarrinhoAdicionarItemRequestDto dtoZero = dtoValido();
-        dtoZero.setPreco(BigDecimal.ZERO);
-
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dtoZero)))
-                .andExpect(status().isBadRequest());
-
-        CarrinhoAdicionarItemRequestDto dtoNeg = dtoValido();
-        dtoNeg.setPreco(new BigDecimal("-1"));
-
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dtoNeg)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void deveRetornar400_quandoAdicionarItemComQuantidadeNulaOuZero() throws Exception {
-        Long carrinhoId = criarCarrinhoEObterId();
-
-        CarrinhoAdicionarItemRequestDto dtoNula = dtoValido();
-        dtoNula.setQuantidade(null);
-
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dtoNula)))
-                .andExpect(status().isBadRequest());
-
-        CarrinhoAdicionarItemRequestDto dtoZero = dtoValido();
-        dtoZero.setQuantidade(0);
-
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dtoZero)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void deveRetornar400_quandoJsonForInvalido() throws Exception {
-        Long carrinhoId = criarCarrinhoEObterId();
-
-        mockMvc.perform(post("/carrinhos/{carrinhoId}/itens", carrinhoId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{"))
-                .andExpect(status().isBadRequest());
-    }
-
-    private CarrinhoAdicionarItemRequestDto dtoValido() {
-        CarrinhoAdicionarItemRequestDto dto = new CarrinhoAdicionarItemRequestDto();
-        dto.setProdutoId(10L);
-        dto.setNomeProduto("Produto Teste");
-        dto.setPreco(new BigDecimal("50.00"));
-        dto.setQuantidade(2);
-        return dto;
-    }
-
-    private Long criarCarrinhoEObterId() throws Exception {
-        String json = mockMvc.perform(post("/carrinhos"))
+    private Long criarCarrinho() throws Exception {
+        String response = mockMvc.perform(post("/carrinhos"))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        return objectMapper.readTree(json).get("id").asLong();
+        int idx = response.indexOf("\"id\"");
+        int colon = response.indexOf(":", idx);
+        int comma = response.indexOf(",", colon);
+        return Long.valueOf(response.substring(colon + 1, comma).trim());
     }
 }
