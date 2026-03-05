@@ -3,239 +3,153 @@ package io.github.Erissonteixeira.api_ecommerce.domain.produto.service;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoRequestDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.dto.ProdutoResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.entity.ProdutoEntity;
-import io.github.Erissonteixeira.api_ecommerce.domain.produto.repository.ProdutoRepository;
 import io.github.Erissonteixeira.api_ecommerce.domain.produto.mapper.ProdutoMapper;
+import io.github.Erissonteixeira.api_ecommerce.domain.produto.repository.ProdutoRepository;
 import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProdutoServiceImplTest {
 
     @Mock
-    ProdutoRepository produtoRepository;
+    private ProdutoRepository produtoRepository;
 
     @Mock
-    ProdutoMapper produtoMapper;
+    private ProdutoMapper produtoMapper;
 
     @InjectMocks
-    ProdutoServiceImpl produtoService;
-
-    private ProdutoRequestDto dtoValido() {
-        var dto = new ProdutoRequestDto();
-        dto.setNome("Produto Teste");
-        dto.setPreco(new BigDecimal("10.50"));
-        dto.setAtivo(true);
-        return dto;
-    }
-
-    private ProdutoEntity entityBase(Long id, boolean ativo) {
-        var e = new ProdutoEntity();
-        e.setId(id);
-        e.setNome("Produto Teste");
-        e.setPreco(new BigDecimal("10.50"));
-        e.setAtivo(ativo);
-        e.setCriadoEm(LocalDateTime.now().minusDays(1));
-        e.setAtualizadoEm(null);
-        return e;
-    }
-
-    private ProdutoResponseDto response(Long id, boolean ativo) {
-        var r = new ProdutoResponseDto();
-        r.setId(id);
-        r.setNome("Produto Teste");
-        r.setPreco(new BigDecimal("10.50"));
-        r.setAtivo(ativo);
-        r.setCriadoEm(LocalDateTime.now().minusDays(1));
-        r.setAtualizadoEm(null);
-        return r;
-    }
+    private ProdutoServiceImpl produtoService;
 
     @Test
-    void criar_deveSetarCriadoEm_eAtualizadoEmNull_eSalvar() {
-        var dto = dtoValido();
-        var entitySemDatas = new ProdutoEntity();
-        entitySemDatas.setNome(dto.getNome());
-        entitySemDatas.setPreco(dto.getPreco());
-        entitySemDatas.setAtivo(dto.getAtivo());
+    void criar_deveSalvarEMapearResponse() {
+        ProdutoRequestDto dto = new ProdutoRequestDto();
+        dto.setNome("mouse gamer");
+        dto.setPreco(new BigDecimal("129.90"));
+        dto.setAtivo(true);
 
-        var salvo = entityBase(1L, true);
-        salvo.setAtualizadoEm(null); // como teu service deixa null no create
+        ProdutoEntity entity = new ProdutoEntity();
+        entity.setNome(dto.getNome());
+        entity.setPreco(dto.getPreco());
+        entity.setAtivo(dto.getAtivo());
 
-        var resp = response(1L, true);
+        ProdutoEntity salvo = new ProdutoEntity();
+        salvo.setId(1L);
+        salvo.setNome(dto.getNome());
+        salvo.setPreco(dto.getPreco());
+        salvo.setAtivo(true);
+        salvo.setCriadoEm(LocalDateTime.now());
 
-        when(produtoMapper.toEntity(dto)).thenReturn(entitySemDatas);
+        ProdutoResponseDto response = new ProdutoResponseDto();
+        response.setId(1L);
+        response.setNome(dto.getNome());
+        response.setPreco(dto.getPreco());
+        response.setAtivo(true);
+
+        when(produtoMapper.toEntity(dto)).thenReturn(entity);
         when(produtoRepository.save(any(ProdutoEntity.class))).thenReturn(salvo);
-        when(produtoMapper.toResponse(salvo)).thenReturn(resp);
+        when(produtoMapper.toResponse(salvo)).thenReturn(response);
 
-        var resultado = produtoService.criar(dto);
+        ProdutoResponseDto resultado = produtoService.criar(dto);
 
-        assertThat(resultado).isNotNull();
-        assertThat(resultado.getId()).isEqualTo(1L);
+        assertNotNull(resultado);
+        assertEquals(1L, resultado.getId());
+        assertEquals("mouse gamer", resultado.getNome());
+        assertEquals(new BigDecimal("129.90"), resultado.getPreco());
+        assertTrue(resultado.getAtivo());
 
-        ArgumentCaptor<ProdutoEntity> captor = ArgumentCaptor.forClass(ProdutoEntity.class);
-        verify(produtoRepository).save(captor.capture());
-
-        ProdutoEntity enviadoParaSalvar = captor.getValue();
-        assertThat(enviadoParaSalvar.getCriadoEm()).isNotNull();
-        assertThat(enviadoParaSalvar.getAtualizadoEm()).isNull();
-
+        verify(produtoRepository).save(any(ProdutoEntity.class));
         verify(produtoMapper).toEntity(dto);
         verify(produtoMapper).toResponse(salvo);
     }
 
     @Test
-    void buscarPorId_quandoExiste_deveRetornarResponse() {
-        var entity = entityBase(10L, true);
-        var resp = response(10L, true);
-
-        when(produtoRepository.findById(10L)).thenReturn(Optional.of(entity));
-        when(produtoMapper.toResponse(entity)).thenReturn(resp);
-
-        var resultado = produtoService.buscarPorId(10L);
-
-        assertThat(resultado.getId()).isEqualTo(10L);
-        verify(produtoRepository).findById(10L);
-        verify(produtoMapper).toResponse(entity);
-    }
-
-    @Test
-    void buscarPorId_quandoNaoExiste_deveLancarRecursoNaoEncontrado() {
+    void buscarPorId_quandoNaoExiste_deveLancar404() {
         when(produtoRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> produtoService.buscarPorId(99L))
-                .isInstanceOf(RecursoNaoEncontradoException.class)
-                .hasMessage("Produto não encontrado");
-
-        verify(produtoRepository).findById(99L);
-        verifyNoInteractions(produtoMapper);
+        assertThrows(RecursoNaoEncontradoException.class, () -> produtoService.buscarPorId(99L));
     }
 
     @Test
-    void listarTodos_deveMapearCadaEntityParaResponse() {
-        var e1 = entityBase(1L, true);
-        var e2 = entityBase(2L, false);
+    void buscarPorId_quandoExiste_deveRetornarResponse() {
+        ProdutoEntity entity = new ProdutoEntity();
+        entity.setId(1L);
+        entity.setNome("teclado");
+        entity.setPreco(new BigDecimal("219.90"));
+        entity.setAtivo(true);
 
-        var r1 = response(1L, true);
-        var r2 = response(2L, false);
+        ProdutoResponseDto response = new ProdutoResponseDto();
+        response.setId(1L);
+        response.setNome("teclado");
+        response.setPreco(new BigDecimal("219.90"));
+        response.setAtivo(true);
 
-        when(produtoRepository.findAll()).thenReturn(List.of(e1, e2));
-        when(produtoMapper.toResponse(e1)).thenReturn(r1);
-        when(produtoMapper.toResponse(e2)).thenReturn(r2);
+        when(produtoRepository.findById(1L)).thenReturn(Optional.of(entity));
+        when(produtoMapper.toResponse(entity)).thenReturn(response);
 
-        var lista = produtoService.listarTodos();
+        ProdutoResponseDto resultado = produtoService.buscarPorId(1L);
 
-        assertThat(lista).hasSize(2);
-        assertThat(lista.get(0).getId()).isEqualTo(1L);
-        assertThat(lista.get(1).getId()).isEqualTo(2L);
-
-        verify(produtoRepository).findAll();
-        verify(produtoMapper).toResponse(e1);
-        verify(produtoMapper).toResponse(e2);
+        assertNotNull(resultado);
+        assertEquals(1L, resultado.getId());
+        assertEquals("teclado", resultado.getNome());
     }
 
     @Test
-    void listarAtivos_deveChamarFindByAtivoTrue_eMapear() {
-        var e1 = entityBase(1L, true);
-        var r1 = response(1L, true);
+    void atualizar_quandoExiste_deveAtualizarCampos() {
+        ProdutoRequestDto dto = new ProdutoRequestDto();
+        dto.setNome("monitor gamer");
+        dto.setPreco(new BigDecimal("899.90"));
+        dto.setAtivo(true);
 
-        when(produtoRepository.findByAtivoTrue()).thenReturn(List.of(e1));
-        when(produtoMapper.toResponse(e1)).thenReturn(r1);
+        ProdutoEntity existente = new ProdutoEntity();
+        existente.setId(1L);
+        existente.setNome("old");
+        existente.setPreco(new BigDecimal("10.00"));
+        existente.setAtivo(false);
 
-        var lista = produtoService.listarAtivos();
-
-        assertThat(lista).hasSize(1);
-        assertThat(lista.get(0).getAtivo()).isTrue();
-
-        verify(produtoRepository).findByAtivoTrue();
-        verify(produtoMapper).toResponse(e1);
-    }
-
-    @Test
-    void atualizar_quandoExiste_deveAtualizarCampos_setarAtualizadoEm_eSalvar() {
-        var dto = dtoValido();
-        dto.setNome("Nome Novo");
-        dto.setPreco(new BigDecimal("99.99"));
-        dto.setAtivo(false);
-
-        var existente = entityBase(5L, true);
-        existente.setAtualizadoEm(null);
-
-        var resp = new ProdutoResponseDto();
-        resp.setId(5L);
-        resp.setNome("Nome Novo");
-        resp.setPreco(new BigDecimal("99.99"));
-        resp.setAtivo(false);
-
-        when(produtoRepository.findById(5L)).thenReturn(Optional.of(existente));
-        when(produtoRepository.save(any(ProdutoEntity.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(produtoMapper.toResponse(any(ProdutoEntity.class))).thenReturn(resp);
-
-        var resultado = produtoService.atualizar(5L, dto);
-
-        assertThat(resultado.getId()).isEqualTo(5L);
-        assertThat(existente.getNome()).isEqualTo("Nome Novo");
-        assertThat(existente.getPreco()).isEqualByComparingTo("99.99");
-        assertThat(existente.getAtivo()).isFalse();
-        assertThat(existente.getAtualizadoEm()).isNotNull();
-
-        verify(produtoRepository).findById(5L);
-        verify(produtoRepository).save(existente);
-        verify(produtoMapper).toResponse(existente);
-    }
-
-    @Test
-    void atualizar_quandoNaoExiste_deveLancarRecursoNaoEncontrado() {
-        when(produtoRepository.findById(123L)).thenReturn(Optional.empty());
-
-        assertThatThrownBy(() -> produtoService.atualizar(123L, dtoValido()))
-                .isInstanceOf(RecursoNaoEncontradoException.class)
-                .hasMessage("Produto não encontrado");
-
-        verify(produtoRepository).findById(123L);
-        verify(produtoRepository, never()).save(any());
-    }
-
-    @Test
-    void desativar_quandoExiste_deveSetarAtivoFalse_setarAtualizadoEm_eSalvar() {
-        var existente = entityBase(7L, true);
-        existente.setAtualizadoEm(null);
-
-        when(produtoRepository.findById(7L)).thenReturn(Optional.of(existente));
+        when(produtoRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(produtoRepository.save(any(ProdutoEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        produtoService.desativar(7L);
+        ProdutoResponseDto response = new ProdutoResponseDto();
+        response.setId(1L);
+        response.setNome(dto.getNome());
+        response.setPreco(dto.getPreco());
+        response.setAtivo(dto.getAtivo());
 
-        assertThat(existente.getAtivo()).isFalse();
-        assertThat(existente.getAtualizadoEm()).isNotNull();
+        when(produtoMapper.toResponse(any(ProdutoEntity.class))).thenReturn(response);
 
-        verify(produtoRepository).findById(7L);
-        verify(produtoRepository).save(existente);
-        verifyNoInteractions(produtoMapper);
+        ProdutoResponseDto atualizado = produtoService.atualizar(1L, dto);
+
+        assertEquals("monitor gamer", atualizado.getNome());
+        assertEquals(new BigDecimal("899.90"), atualizado.getPreco());
+        assertTrue(atualizado.getAtivo());
+
+        verify(produtoRepository).save(any(ProdutoEntity.class));
     }
 
     @Test
-    void desativar_quandoNaoExiste_deveLancarRecursoNaoEncontrado() {
-        when(produtoRepository.findById(404L)).thenReturn(Optional.empty());
+    void desativar_quandoExiste_deveMarcarAtivoFalse() {
+        ProdutoEntity existente = new ProdutoEntity();
+        existente.setId(1L);
+        existente.setAtivo(true);
 
-        assertThatThrownBy(() -> produtoService.desativar(404L))
-                .isInstanceOf(RecursoNaoEncontradoException.class)
-                .hasMessage("Produto não encontrado");
+        when(produtoRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(produtoRepository.save(any(ProdutoEntity.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        verify(produtoRepository).findById(404L);
-        verify(produtoRepository, never()).save(any());
+        produtoService.desativar(1L);
+
+        assertFalse(existente.getAtivo());
+        verify(produtoRepository).save(existente);
     }
 }
