@@ -2,6 +2,7 @@ package io.github.Erissonteixeira.api_ecommerce.domain.auth.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,32 +15,31 @@ import java.util.Date;
 public class JwtService {
 
     private final SecretKey key;
-    private final long expirationMillis;
+    private final long expiracaoMs;
 
     public JwtService(
-            @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.expiration-minutes:120}") long expirationMinutes
+            @Value("${security.jwt.secret}") String secret,
+            @Value("${security.jwt.expiracao-ms:3600000}") long expiracaoMs
     ) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.expirationMillis = expirationMinutes * 60_000L;
+        this.expiracaoMs = expiracaoMs;
     }
 
-    public String gerarToken(Long userId, String email) {
-        Date now = new Date();
-        Date exp = new Date(now.getTime() + expirationMillis);
+    public String gerarToken(String email) {
+        Date agora = new Date();
+        Date expiraEm = new Date(agora.getTime() + expiracaoMs);
 
         return Jwts.builder()
-                .subject(email)
-                .claim("uid", userId)
-                .issuedAt(now)
-                .expiration(exp)
-                .signWith(key, Jwts.SIG.HS256)
+                .setSubject(email)
+                .setIssuedAt(agora)
+                .setExpiration(expiraEm)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public boolean tokenValido(String token) {
         try {
-            getClaims(token);
+            extrairClaims(token);
             return true;
         } catch (Exception e) {
             return false;
@@ -47,22 +47,14 @@ public class JwtService {
     }
 
     public String extrairEmail(String token) {
-        return getClaims(token).getSubject();
+        return extrairClaims(token).getSubject();
     }
 
-    public Long extrairUserId(String token) {
-        Object uid = getClaims(token).get("uid");
-        if (uid == null) return null;
-        if (uid instanceof Integer i) return i.longValue();
-        if (uid instanceof Long l) return l;
-        return Long.valueOf(uid.toString());
-    }
-
-    private Claims getClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
+    private Claims extrairClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
