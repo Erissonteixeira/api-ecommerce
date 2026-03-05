@@ -31,6 +31,12 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+
+      JWT_SECRET: ${JWT_SECRET:-uma-chave-bem-grande-com-pelo-menos-32-caracteres!!!}
+      JWT_EXP_MINUTES: ${JWT_EXP_MINUTES:-120}
+
+      SPRING_APPLICATION_JSON: >
+        {"security":{"jwt":{"secret":"${JWT_SECRET:-uma-chave-bem-grande-com-pelo-menos-32-caracteres!!!}","expiration-minutes":${JWT_EXP_MINUTES:-120}}}}
     ports:
       - "8080:8080"
     depends_on:
