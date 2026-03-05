@@ -38,6 +38,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenResponseDto register(RegisterRequestDto dto) {
+
         UsuarioRequestDto u = new UsuarioRequestDto();
         u.setNome(dto.getNome());
         u.setEmail(dto.getEmail());
@@ -47,17 +48,16 @@ public class AuthServiceImpl implements AuthService {
 
         usuarioService.criar(u);
 
-        String email = dto.getEmail().trim().toLowerCase();
-
-        UsuarioEntity salvo = usuarioRepository.findByEmail(email)
+        UsuarioEntity salvo = usuarioRepository.findByEmail(dto.getEmail().trim().toLowerCase())
                 .orElseThrow(() -> new NegocioException("Falha ao criar usuário"));
 
-        String token = jwtService.gerarToken(salvo.getId(), salvo.getEmail());
+        String token = jwtService.gerarToken(salvo.getEmail());
         return new TokenResponseDto(token);
     }
 
     @Override
     public TokenResponseDto login(LoginRequestDto dto) {
+
         String email = dto.getEmail().trim().toLowerCase();
 
         UsuarioEntity user = usuarioRepository.findByEmail(email)
@@ -67,15 +67,14 @@ public class AuthServiceImpl implements AuthService {
             throw new NegocioException("Credenciais inválidas");
         }
 
-        String token = jwtService.gerarToken(user.getId(), user.getEmail());
+        String token = jwtService.gerarToken(user.getEmail());
         return new TokenResponseDto(token);
     }
 
     @Override
     public MeResponseDto me(String email) {
-        String normalized = email == null ? "" : email.trim().toLowerCase();
 
-        UsuarioEntity user = usuarioRepository.findByEmail(normalized)
+        UsuarioEntity user = usuarioRepository.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new NegocioException("Usuário não encontrado"));
 
         return new MeResponseDto(user.getId(), user.getNome(), user.getEmail());
