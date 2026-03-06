@@ -32,9 +32,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         String method = request.getMethod();
 
-        if ("OPTIONS".equalsIgnoreCase(method)) return true;
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            return true;
+        }
 
-        return path.startsWith("/auth/")
+        return path.equals("/auth/login")
+                || path.equals("/auth/register")
                 || path.startsWith("/actuator/")
                 || path.startsWith("/v3/api-docs/")
                 || path.startsWith("/swagger-ui/")
@@ -66,6 +69,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = header.substring(BEARER_PREFIX.length()).trim();
+
         if (token.isBlank()) {
             filterChain.doFilter(request, response);
             return;
@@ -78,6 +82,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             String email = jwtService.extrairEmail(token);
+
             if (email == null || email.isBlank()) {
                 filterChain.doFilter(request, response);
                 return;
@@ -90,6 +95,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     null,
                     userDetails.getAuthorities()
             );
+
             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(auth);
 
