@@ -13,6 +13,8 @@ import io.github.Erissonteixeira.api_ecommerce.exception.RecursoNaoEncontradoExc
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class PedidoServiceImpl implements PedidoService {
 
@@ -34,14 +36,7 @@ public class PedidoServiceImpl implements PedidoService {
     @Transactional
     public PedidoEntity criarPedidoDoCarrinho(String email) {
 
-        if (email == null || email.trim().isEmpty()) {
-            throw new NegocioException("Email inválido");
-        }
-
-        String normalized = email.trim().toLowerCase();
-
-        UsuarioEntity usuario = usuarioRepository.findByEmail(normalized)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
+        UsuarioEntity usuario = buscarUsuarioPorEmail(email);
 
         CarrinhoEntity carrinho = carrinhoRepository.buscarPorUsuarioIdComItens(usuario.getId())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Carrinho não encontrado"));
@@ -69,5 +64,36 @@ public class PedidoServiceImpl implements PedidoService {
         carrinhoRepository.save(carrinho);
 
         return salvo;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PedidoEntity> listarMeusPedidos(String email) {
+        UsuarioEntity usuario = buscarUsuarioPorEmail(email);
+        return pedidoRepository.findAllByUsuarioIdOrderByCriadoEmDesc(usuario.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PedidoEntity buscarMeuPedidoPorId(String email, Long pedidoId) {
+        if (pedidoId == null) {
+            throw new NegocioException("Id do pedido é obrigatório");
+        }
+
+        UsuarioEntity usuario = buscarUsuarioPorEmail(email);
+
+        return pedidoRepository.findByIdAndUsuarioId(pedidoId, usuario.getId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido não encontrado"));
+    }
+
+    private UsuarioEntity buscarUsuarioPorEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new NegocioException("Email inválido");
+        }
+
+        String normalized = email.trim().toLowerCase();
+
+        return usuarioRepository.findByEmail(normalized)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado"));
     }
 }
