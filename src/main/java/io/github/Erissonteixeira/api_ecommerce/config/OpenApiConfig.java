@@ -19,6 +19,7 @@ public class OpenApiConfig {
         private static final String GROUP_PRODUTOS = "Produtos";
         private static final String GROUP_CARRINHOS = "Carrinhos";
         private static final String GROUP_AUTH = "Auth";
+        private static final String GROUP_PEDIDOS = "Pedidos";
 
         private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
@@ -83,7 +84,7 @@ public class OpenApiConfig {
         public GroupedOpenApi carrinhosApi(OpenApiCustomizer jwtSecurityCustomizer) {
                 return GroupedOpenApi.builder()
                         .group(GROUP_CARRINHOS)
-                        .pathsToMatch("/carrinhos/**")
+                        .pathsToMatch("/carrinho/**")
                         .addOpenApiCustomizer(jwtSecurityCustomizer)
                         .build();
         }
@@ -93,6 +94,15 @@ public class OpenApiConfig {
                 return GroupedOpenApi.builder()
                         .group(GROUP_AUTH)
                         .pathsToMatch("/auth/**")
+                        .addOpenApiCustomizer(jwtSecurityCustomizer)
+                        .build();
+        }
+
+        @Bean
+        public GroupedOpenApi pedidosApi(OpenApiCustomizer jwtSecurityCustomizer) {
+                return GroupedOpenApi.builder()
+                        .group(GROUP_PEDIDOS)
+                        .pathsToMatch("/pedidos/**")
                         .addOpenApiCustomizer(jwtSecurityCustomizer)
                         .build();
         }
