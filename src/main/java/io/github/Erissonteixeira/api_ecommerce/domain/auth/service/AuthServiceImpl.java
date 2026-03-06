@@ -5,6 +5,8 @@ import io.github.Erissonteixeira.api_ecommerce.domain.auth.dto.request.RegisterR
 import io.github.Erissonteixeira.api_ecommerce.domain.auth.dto.response.MeResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.auth.dto.response.TokenResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.auth.security.JwtService;
+import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.entity.CarrinhoEntity;
+import io.github.Erissonteixeira.api_ecommerce.domain.carrinho.repository.CarrinhoRepository;
 import io.github.Erissonteixeira.api_ecommerce.domain.usuario.dto.UsuarioRequestDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.usuario.entity.UsuarioEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.usuario.repository.UsuarioRepository;
@@ -22,17 +24,20 @@ public class AuthServiceImpl implements AuthService {
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final CarrinhoRepository carrinhoRepository;
 
     public AuthServiceImpl(
             UsuarioRepository usuarioRepository,
             UsuarioService usuarioService,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService
+            JwtService jwtService,
+            CarrinhoRepository carrinhoRepository
     ) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioService = usuarioService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.carrinhoRepository = carrinhoRepository;
     }
 
     @Override
@@ -50,6 +55,11 @@ public class AuthServiceImpl implements AuthService {
 
         UsuarioEntity salvo = usuarioRepository.findByEmail(dto.getEmail().trim().toLowerCase())
                 .orElseThrow(() -> new NegocioException("Falha ao criar usuário"));
+
+        boolean carrinhoJaExiste = carrinhoRepository.findByUsuarioId(salvo.getId()).isPresent();
+        if (!carrinhoJaExiste) {
+            carrinhoRepository.save(new CarrinhoEntity(salvo));
+        }
 
         String token = jwtService.gerarToken(salvo.getEmail());
         return new TokenResponseDto(token);
