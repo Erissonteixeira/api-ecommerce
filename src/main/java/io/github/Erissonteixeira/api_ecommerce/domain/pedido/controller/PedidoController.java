@@ -2,12 +2,10 @@ package io.github.Erissonteixeira.api_ecommerce.domain.pedido.controller;
 
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoEntity;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.service.PedidoService;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -19,10 +17,21 @@ public class PedidoController {
         this.pedidoService = pedidoService;
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public PedidoEntity criarPedido(Authentication authentication) {
-        String email = authentication.getName();
-        return pedidoService.criarPedidoDoCarrinho(email);
+    @PostMapping("/me")
+    public PedidoEntity criarMeuPedido(Authentication authentication) {
+        return pedidoService.criarPedidoDoCarrinho(authentication.getName());
+    }
+
+    @GetMapping("/me")
+    public List<PedidoEntity> listarMeusPedidos(Authentication authentication) {
+        return pedidoService.listarMeusPedidos(authentication.getName());
+    }
+
+    @GetMapping("/me/{id}")
+    public PedidoEntity buscarMeuPedidoPorId(
+            Authentication authentication,
+            @PathVariable Long id
+    ) {
+        return pedidoService.buscarMeuPedidoPorId(authentication.getName(), id);
     }
 }
