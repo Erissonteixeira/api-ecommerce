@@ -13,6 +13,11 @@ public class PedidoResponseDto {
     private LocalDateTime atualizadoEm;
     private StatusPedido status;
     private BigDecimal total;
+
+    private Long usuarioId;
+    private String usuarioNome;
+    private String usuarioEmail;
+
     private List<PedidoItemResponseDto> itens;
 
     public PedidoResponseDto() {
@@ -22,44 +27,68 @@ public class PedidoResponseDto {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public LocalDateTime getCriadoEm() {
         return criadoEm;
-    }
-
-    public void setCriadoEm(LocalDateTime criadoEm) {
-        this.criadoEm = criadoEm;
     }
 
     public LocalDateTime getAtualizadoEm() {
         return atualizadoEm;
     }
 
-    public void setAtualizadoEm(LocalDateTime atualizadoEm) {
-        this.atualizadoEm = atualizadoEm;
-    }
-
     public StatusPedido getStatus() {
         return status;
-    }
-
-    public void setStatus(StatusPedido status) {
-        this.status = status;
     }
 
     public BigDecimal getTotal() {
         return total;
     }
 
-    public void setTotal(BigDecimal total) {
-        this.total = total;
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
+
+    public String getUsuarioNome() {
+        return usuarioNome;
     }
 
     public List<PedidoItemResponseDto> getItens() {
         return itens;
+    }
+
+    public void setUsuarioNome(String usuarioNome) {
+        this.usuarioNome = usuarioNome;
+    }
+
+    public String getUsuarioEmail() {
+        return usuarioEmail;
+    }
+
+    public void setUsuarioEmail(String usuarioEmail) {
+        this.usuarioEmail = usuarioEmail;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setCriadoEm(LocalDateTime criadoEm) {
+        this.criadoEm = criadoEm;
+    }
+
+    public void setAtualizadoEm(LocalDateTime atualizadoEm) {
+        this.atualizadoEm = atualizadoEm;
+    }
+
+    public void setStatus(StatusPedido status) {
+        this.status = status;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
     }
 
     public void setItens(List<PedidoItemResponseDto> itens) {
