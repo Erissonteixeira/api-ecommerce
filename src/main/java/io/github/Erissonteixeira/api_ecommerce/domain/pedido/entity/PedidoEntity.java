@@ -1,5 +1,6 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity;
 
+import io.github.Erissonteixeira.api_ecommerce.domain.usuario.entity.UsuarioEntity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -28,6 +29,10 @@ public class PedidoEntity {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal total = BigDecimal.ZERO;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private UsuarioEntity usuario;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<PedidoItemEntity> itens = new ArrayList<>();
@@ -90,6 +95,14 @@ public class PedidoEntity {
 
     public BigDecimal getTotal() {
         return total;
+    }
+
+    public UsuarioEntity getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(UsuarioEntity usuario) {
+        this.usuario = usuario;
     }
 
     public List<PedidoItemEntity> getItens() {
