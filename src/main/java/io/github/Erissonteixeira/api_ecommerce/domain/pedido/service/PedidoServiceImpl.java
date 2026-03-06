@@ -51,6 +51,7 @@ public class PedidoServiceImpl implements PedidoService {
         }
 
         PedidoEntity pedido = new PedidoEntity();
+        pedido.setUsuario(usuario);
 
         for (ItemCarrinhoEntity item : carrinho.getItens()) {
             PedidoItemEntity pedidoItem = new PedidoItemEntity(
