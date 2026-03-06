@@ -1,6 +1,8 @@
 package io.github.Erissonteixeira.api_ecommerce.domain.pedido.controller;
 
+import io.github.Erissonteixeira.api_ecommerce.domain.pedido.dto.PedidoResponseDto;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.entity.PedidoEntity;
+import io.github.Erissonteixeira.api_ecommerce.domain.pedido.mapper.PedidoMapper;
 import io.github.Erissonteixeira.api_ecommerce.domain.pedido.service.PedidoService;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -12,26 +14,31 @@ import java.util.List;
 public class PedidoController {
 
     private final PedidoService pedidoService;
+    private final PedidoMapper pedidoMapper;
 
-    public PedidoController(PedidoService pedidoService) {
+    public PedidoController(PedidoService pedidoService, PedidoMapper pedidoMapper) {
         this.pedidoService = pedidoService;
+        this.pedidoMapper = pedidoMapper;
     }
 
     @PostMapping("/me")
-    public PedidoEntity criarMeuPedido(Authentication authentication) {
-        return pedidoService.criarPedidoDoCarrinho(authentication.getName());
+    public PedidoResponseDto criarMeuPedido(Authentication authentication) {
+        PedidoEntity pedido = pedidoService.criarPedidoDoCarrinho(authentication.getName());
+        return pedidoMapper.toResponseDto(pedido);
     }
 
     @GetMapping("/me")
-    public List<PedidoEntity> listarMeusPedidos(Authentication authentication) {
-        return pedidoService.listarMeusPedidos(authentication.getName());
+    public List<PedidoResponseDto> listarMeusPedidos(Authentication authentication) {
+        List<PedidoEntity> pedidos = pedidoService.listarMeusPedidos(authentication.getName());
+        return pedidoMapper.toResponseDtoList(pedidos);
     }
 
     @GetMapping("/me/{id}")
-    public PedidoEntity buscarMeuPedidoPorId(
+    public PedidoResponseDto buscarMeuPedidoPorId(
             Authentication authentication,
             @PathVariable Long id
     ) {
-        return pedidoService.buscarMeuPedidoPorId(authentication.getName(), id);
+        PedidoEntity pedido = pedidoService.buscarMeuPedidoPorId(authentication.getName(), id);
+        return pedidoMapper.toResponseDto(pedido);
     }
 }
