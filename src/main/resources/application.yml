@@ -19,3 +19,11 @@ security:
   jwt:
     secret: ${app.jwt.secret}
     expiration-minutes: ${app.jwt.expiration-minutes}
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info
+      endpoint:
+        health:
+          show-details: never
